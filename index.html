@@ -90,16 +90,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-import{background:#1A3770;color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.02em}
 .btn-import:active{transform:scale(.97)}
 .btn-reimport{background:#5856D6;color:#fff;border:none;border-radius:9px;padding:8px 12px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
+.splash-spin{width:34px;height:34px;border:3px solid #E5E5EA;border-top-color:#1A3770;border-radius:50%;animation:_spin .8s linear infinite;margin:6px auto 0}
+@keyframes _spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-<div id="splash" class="splash">
-  <div class="splash-ic">📦</div>
-  <div class="splash-tit">Conferência de Quebras</div>
-  <div class="splash-sub">Importe a planilha de etiquetas (Inflow) para começar a conferência.</div>
-  <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="processarArquivo(this.files[0])"/>
-  <button class="btn-import" onclick="document.getElementById('fileInput').click()">📂 Importar planilha</button>
-</div>
+<!-- SPLASH: tela inicial mostra o seletor de usuário, não a importação direta -->
+<div id="splash" style="display:none"></div>
 
 <div id="app" style="display:none">
   <div class="hdr">
@@ -107,7 +104,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <span id="ptxt" class="ptxt">0/0 conferidos</span>
     <span id="syncDot" class="sync-dot" title="Sincronizado" onclick="forcarSync()"></span>
     <button class="btn-pdf" onclick="gerarPDF()">📷 PDF</button>
-    <button class="btn-reimport" onclick="reimportar()" title="Importar outra planilha">📂</button>
+    <!-- Botão de importar: só aparece para o Admin (Cosme) autenticado -->
+    <button id="btnImport" class="btn-reimport" onclick="reimportar()" title="Importar planilha (Admin)" style="display:none">📂</button>
+    <button id="btnNome" onclick="mudarNome()" style="background:rgba(255,255,255,0.18);color:#fff;border:none;border-radius:9px;padding:6px 11px;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap;letter-spacing:.02em">👤</button>
   </div>
   <div class="pbar-bg"><div class="pbar" id="pbar"></div></div>
   <div class="search-bar">
@@ -127,20 +126,122 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<div id="nomeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:18px">
-  <div style="background:#fff;border-radius:16px;padding:22px;max-width:340px;width:100%;display:flex;flex-direction:column;gap:12px">
-    <div style="font-size:15px;font-weight:900;color:#1A3770;text-align:center">Quem é você?</div>
-    <button onclick="setMeNome('Eduardo')" style="padding:14px;border:none;border-radius:12px;background:#1A3770;color:#fff;font-size:15px;font-weight:800;cursor:pointer">Eduardo</button>
-    <button onclick="setMeNome('Anderson')" style="padding:14px;border:none;border-radius:12px;background:#1A3770;color:#fff;font-size:15px;font-weight:800;cursor:pointer">Anderson</button>
+<!-- MODAL: seleção de usuário -->
+<div id="nomeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)">
+  <div style="background:#fff;border-radius:16px;padding:22px;max-width:340px;width:100%;display:flex;flex-direction:column;gap:11px">
+    <div style="font-size:16px;font-weight:900;color:#1A3770;text-align:center;margin-bottom:2px">Quem é você?</div>
+    <button onclick="selecionarUsuario('Cosme')" style="padding:14px;border:none;border-radius:12px;background:#1A3770;color:#fff;font-size:15px;font-weight:800;cursor:pointer">👑 Cosme (Admin)</button>
+    <button onclick="selecionarUsuario('Anderson')" style="padding:14px;border:none;border-radius:12px;background:#5856D6;color:#fff;font-size:15px;font-weight:800;cursor:pointer">📋 Anderson</button>
+    <div style="font-size:11px;color:#8E8E93;text-align:center;margin:2px 0">ou entre como convidado:</div>
     <div style="display:flex;gap:8px">
-      <input id="nomeInput" placeholder="Outro nome..." style="flex:1;border:1.5px solid #D1D1D6;border-radius:10px;padding:10px;font-size:13px"/>
-      <button onclick="setMeNome(document.getElementById('nomeInput').value)" style="padding:12px 16px;border:none;border-radius:10px;background:#34C759;color:#fff;font-size:13px;font-weight:800;cursor:pointer">OK</button>
+      <input id="nomeInput" placeholder="Seu nome..." style="flex:1;border:1.5px solid #D1D1D6;border-radius:10px;padding:11px;font-size:13px" onkeydown="if(event.key==='Enter')selecionarUsuario(this.value)"/>
+      <button onclick="selecionarUsuario(document.getElementById('nomeInput').value)" style="padding:12px 18px;border:none;border-radius:10px;background:#34C759;color:#fff;font-size:13px;font-weight:800;cursor:pointer">OK</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL: senha do Admin -->
+<div id="senhaModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:310;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)">
+  <div style="background:#fff;border-radius:16px;padding:22px;max-width:320px;width:100%;display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:15px;font-weight:900;color:#1A3770;text-align:center">🔒 Senha do Admin</div>
+    <div style="font-size:12px;color:#8E8E93;text-align:center;line-height:1.4">Digite a senha para liberar a importação de planilhas.</div>
+    <input id="senhaInput" type="password" placeholder="Senha..." style="border:1.5px solid #D1D1D6;border-radius:10px;padding:12px;font-size:14px;text-align:center" onkeydown="if(event.key==='Enter')confirmarSenhaAdmin()"/>
+    <div style="display:flex;gap:8px">
+      <button onclick="fecharSenhaModal()" style="flex:1;padding:12px;border:none;border-radius:10px;background:#E5E5EA;color:#1C1C1E;font-size:13px;font-weight:800;cursor:pointer">Só conferir</button>
+      <button onclick="confirmarSenhaAdmin()" style="flex:1;padding:12px;border:none;border-radius:10px;background:#1A3770;color:#fff;font-size:13px;font-weight:800;cursor:pointer">Entrar</button>
+    </div>
+    <div id="senhaErro" style="display:none;font-size:11px;color:#FF3B30;text-align:center;font-weight:700">Senha incorreta.</div>
   </div>
 </div>
 
 <script>
 var dados = [];
+var ME = '';
+var isAdmin = false;
+
+// ── Gerenciamento de usuário ──
+function selecionarUsuario(nome){
+  nome = (nome || '').trim();
+  if(!nome){ alert('Digite um nome para continuar.'); return; }
+  // Fecha o modal de nome
+  var m = document.getElementById('nomeModal');
+  if(m) m.style.display = 'none';
+
+  if(nome === 'Cosme'){
+    // Admin: pede senha antes de liberar
+    var sm = document.getElementById('senhaModal');
+    if(sm){ sm.style.display = 'flex'; setTimeout(function(){ var si=document.getElementById('senhaInput'); if(si)si.focus(); },100); }
+    // Guarda o nome provisório para usar após confirmação da senha
+    window._nomeAdmin = nome;
+  } else {
+    _aplicarUsuario(nome, false);
+  }
+}
+
+function confirmarSenhaAdmin(){
+  var inp = document.getElementById('senhaInput');
+  var err = document.getElementById('senhaErro');
+  var senha = inp ? inp.value : '';
+  // Senha do admin — altere aqui se necessário
+  if(senha === 'panutrir2024' || senha === 'admin'){
+    if(err) err.style.display = 'none';
+    var sm = document.getElementById('senhaModal');
+    if(sm) sm.style.display = 'none';
+    if(inp) inp.value = '';
+    _aplicarUsuario(window._nomeAdmin || 'Cosme', true);
+  } else {
+    if(err) err.style.display = 'block';
+  }
+}
+
+function fecharSenhaModal(){
+  var sm = document.getElementById('senhaModal');
+  if(sm) sm.style.display = 'none';
+  var inp = document.getElementById('senhaInput');
+  if(inp) inp.value = '';
+  var err = document.getElementById('senhaErro');
+  if(err) err.style.display = 'none';
+  // Entra sem privilégios de admin
+  _aplicarUsuario(window._nomeAdmin || 'Cosme', false);
+}
+
+function _aplicarUsuario(nome, admin){
+  ME = nome;
+  isAdmin = admin;
+  try{ localStorage.setItem('estoquista_nome', nome); }catch(e){}
+  try{ localStorage.setItem('is_admin', admin ? '1' : '0'); }catch(e){}
+  var bn = document.getElementById('btnNome');
+  if(bn) bn.textContent = (isAdmin ? '👑 ' : '👤 ') + ME;
+  var bi = document.getElementById('btnImport');
+  if(bi) bi.style.display = isAdmin ? 'inline-block' : 'none';
+  render(); prog();
+  setTimeout(function(){
+    try{ iniciarSync(); }catch(e){}
+    setSyncStatus(navigator.onLine ? 'idle' : 'offline');
+    _iniciarPollDados();
+  }, 500);
+}
+
+function mudarNome(){
+  // Limpa nome salvo e mostra o modal novamente
+  try{ localStorage.removeItem('estoquista_nome'); }catch(e){}
+  try{ localStorage.removeItem('is_admin'); }catch(e){}
+  ME = ''; isAdmin = false;
+  var m = document.getElementById('nomeModal');
+  if(m){ m.style.display = 'flex'; }
+  var bi = document.getElementById('btnImport');
+  if(bi) bi.style.display = 'none';
+}
+
+// ── Indicador visual de sincronização ──
+function setSyncStatus(status){
+  var dot = document.getElementById('syncDot');
+  if(!dot) return;
+  var cores = { idle:'#34C759', pushing:'#FF9500', pulling:'#007AFF', offline:'#8E8E93', error:'#FF3B30' };
+  var titulos = { idle:'Sincronizado', pushing:'Enviando...', pulling:'Recebendo...', offline:'Sem conexão', error:'Erro de sincronização' };
+  dot.style.background = cores[status] || '#8E8E93';
+  dot.title = titulos[status] || status;
+}
 
 // Formato de data consistente ddmmyyyy — não depende de locale do browser
 function _dataKey(d){ var dt=d||new Date(); return String(dt.getDate()).padStart(2,'0')+String(dt.getMonth()+1).padStart(2,'0')+dt.getFullYear(); }
@@ -154,201 +255,195 @@ var somaSel = {};
 // ═══════════════════════════════════════════════════════════════
 // SINCRONIZAÇÃO PANTRY (cloud) — 2 estoquistas simultâneos
 // ═══════════════════════════════════════════════════════════════
-var PANTRY_ID = '5dc6c6c6-90b2-4984-8658-2ac8e15d674b';
-var BASKET = 'quebras_' + _dataKey();
-var PANTRY_URL = 'https://getpantry.cloud/apiv1/pantry/' + PANTRY_ID + '/basket/' + BASKET;
+// ═══════════════════════════════════════════════════════════════
+// FIREBASE REALTIME DATABASE — sincronização em tempo real
+// ═══════════════════════════════════════════════════════════════
+var FB_URL = 'https://validaquebra-default-rtdb.firebaseio.com';
 var POLL_MS = 5000;
 var PUSH_DEBOUNCE_MS = 1500;
 
-// Nome do estoquista — lido do localStorage (configurado pelo modal)
-var ME = localStorage.getItem('estoquista_nome') || '';
-function setMeNome(nome){
-  nome=(nome||'').trim();
-  if(!nome)return;
-  ME=nome;
-  try{localStorage.setItem('estoquista_nome',nome);}catch(e){}
-  var m=document.getElementById('nomeModal');
-  if(m)m.style.display='none';
-  var bn=document.getElementById('btnNome');
-  if(bn)bn.textContent='👤 '+ME;
-  // No standalone, só inicia sync se a planilha já foi importada (dados prontos).
-  if(dados && dados.length>0){
-    render();
-    iniciarSync();
-    setSyncStatus(navigator.onLine?'idle':'offline');
-  }
-}
-function mudarNome(){
-  var m=document.getElementById('nomeModal');
-  if(m)m.style.display='flex';
-}
+// Chaves do dia
+function _fbDadosURL(){ return FB_URL + '/dados_' + _dataKey() + '.json'; }
+function _fbConfURL(){  return FB_URL + '/conf_'  + _dataKey() + '.json'; }
 
-var syncStatus = 'idle'; // 'idle' | 'pushing' | 'pulling' | 'error' | 'offline'
-var ultimaMudancaRemota = {}; // {idx: timestamp} para destacar visualmente quem mudou remotamente
 var pushTimer = null;
 var pullTimer = null;
+var _syncBusy = false;
+var ultimaMudancaRemota = {};
 
-function setSyncStatus(s){
-  syncStatus = s;
-  var el = document.getElementById('syncDot');
-  if(!el) return;
-  var cores = {
-    idle:    {bg:'#34C759', tit:'Sincronizado'},
-    pushing: {bg:'#FFCC00', tit:'Enviando...'},
-    pulling: {bg:'#FFCC00', tit:'Buscando atualizações...'},
-    error:   {bg:'#FF3B30', tit:'Erro de sincronização'},
-    offline: {bg:'#8E8E93', tit:'Offline'}
-  };
-  var c = cores[s] || cores.idle;
-  el.style.background = c.bg;
-  el.title = c.tit;
+// ── Envia conferências (E) para o Firebase ──
+function cloudPush(){
+  if(!navigator.onLine){ setSyncStatus('offline'); return; }
+  if(_syncBusy){ cloudPushDebounced(); return; }
+  _syncBusy = true;
+  setSyncStatus('pushing');
+  var guard = setTimeout(function(){ _syncBusy = false; setSyncStatus('error'); }, 15000);
+
+  // Lê remoto, merge, escreve
+  fetch(_fbConfURL())
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(remoto){
+      if(remoto && typeof remoto === 'object'){
+        for(var k in remoto){
+          var rem = remoto[k], loc = E[k];
+          if(!rem || typeof rem !== 'object') continue;
+          if((rem.ts||0) > ((loc&&loc.ts)||0)){ E[k] = rem; ultimaMudancaRemota[k] = Date.now(); }
+        }
+      }
+      return fetch(_fbConfURL(), {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(E)
+      });
+    })
+    .then(function(r){
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      try{ localStorage.setItem(SK, JSON.stringify(E)); }catch(e){}
+      render(); prog();
+      clearTimeout(guard); _syncBusy = false; setSyncStatus('idle');
+    })
+    .catch(function(e){
+      console.warn('[cloudPush]', e);
+      clearTimeout(guard); _syncBusy = false; setSyncStatus('error');
+    });
 }
-
-var _syncBusy = false; // trava simples para evitar push e pull simultâneos
 
 function cloudPushDebounced(){
   if(pushTimer) clearTimeout(pushTimer);
   pushTimer = setTimeout(cloudPush, PUSH_DEBOUNCE_MS);
 }
 
-// Fetch com timeout — evita que requisições travadas (sinal fraco) congelem o sync
-function fetchTimeout(url, opts, ms){
-  opts = opts || {};
-  if(typeof AbortController !== 'undefined'){
-    var ctrl = new AbortController();
-    var t = setTimeout(function(){ ctrl.abort(); }, ms || 12000);
-    opts.signal = ctrl.signal;
-    return fetch(url, opts).finally(function(){ clearTimeout(t); });
-  }
-  return fetch(url, opts);
-}
-
-function cloudPush(){
-  if(!navigator.onLine){ setSyncStatus('offline'); return; }
-  if(_syncBusy){ // se há sync em andamento, reagenda
-    cloudPushDebounced();
-    return;
-  }
-  _syncBusy = true;
-  setSyncStatus('pushing');
-  // Trava de segurança: se algo travar, libera o flag em 15s no máximo
-  var guard = setTimeout(function(){ _syncBusy = false; setSyncStatus('error'); }, 15000);
-  // Lê o estado atual do servidor, faz merge (evita apagar correções do colega) e salva
-  fetchTimeout(PANTRY_URL, { method:'GET' }, 12000)
-  .then(function(r){ return r.ok ? r.json() : null; })
-  .then(function(remoto){
-    if(remoto && typeof remoto === 'object'){
-      for(var k in remoto){
-        var rem=remoto[k], loc=E[k];
-        if(!rem || typeof rem !== 'object') continue;
-        var remTs=rem.ts||0, locTs=(loc&&loc.ts)||0;
-        if(remTs > locTs){ E[k]=rem; ultimaMudancaRemota[k]=Date.now(); } // remoto mais recente prevalece
-      }
-    }
-    return fetchTimeout(PANTRY_URL,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(E)
-    }, 12000);
-  }).then(function(r){
-    if(r && !r.ok){
-      if(r.status===400 || r.status===404){
-        return fetchTimeout(PANTRY_URL,{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(E)
-        }, 12000);
-      }
-      throw new Error('HTTP '+r.status);
-    }
-    return r;
-  }).then(function(r){
-    if(r && !r.ok) throw new Error('HTTP '+r.status);
-    try { localStorage.setItem(SK, JSON.stringify(E)); } catch(e) {}
-    render(); prog();
-    clearTimeout(guard);
-    _syncBusy = false;
-    setSyncStatus('idle');
-  })
-  .catch(function(err){ console.warn('[cloud push]', err); clearTimeout(guard); _syncBusy=false; setSyncStatus('error'); });
-}
-
 function cloudPull(){
   if(!navigator.onLine){ setSyncStatus('offline'); return; }
-  if(_syncBusy) return; // não puxa enquanto um push está escrevendo
+  if(_syncBusy) return;
   _syncBusy = true;
   setSyncStatus('pulling');
-  // Trava de segurança: libera o flag mesmo se a requisição travar
   var guard = setTimeout(function(){ _syncBusy = false; setSyncStatus('error'); }, 15000);
-  fetchTimeout(PANTRY_URL, { method: 'GET' }, 12000)
-  .then(function(r){
-    if(r.status===400 || r.status===404){
-      return null; // basket ainda não existe
-    }
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    return r.json();
-  }).then(function(remoto){
-    if(remoto && typeof remoto === 'object'){
-      var mudou = false;
-      for(var k in remoto){
-        var rem = remoto[k];
-        var loc = E[k];
-        if(!rem || typeof rem !== 'object') continue;
-        var remTs = rem.ts || 0;
-        var locTs = (loc && loc.ts) || 0;
-        if(remTs > locTs){
-          E[k] = rem;
-          ultimaMudancaRemota[k] = Date.now();
-          mudou = true;
+
+  fetch(_fbConfURL())
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(remoto){
+      if(remoto && typeof remoto === 'object'){
+        var mudou = false;
+        for(var k in remoto){
+          var rem = remoto[k], loc = E[k];
+          if(!rem || typeof rem !== 'object') continue;
+          if((rem.ts||0) > ((loc&&loc.ts)||0)){
+            E[k] = rem; ultimaMudancaRemota[k] = Date.now(); mudou = true;
+          }
         }
+        if(mudou){ try{ localStorage.setItem(SK, JSON.stringify(E)); }catch(e){} render(); prog(); }
       }
-      if(mudou){
-        try { localStorage.setItem(SK, JSON.stringify(E)); } catch(e) {}
-        render();
-        prog();
-      }
-    }
-    clearTimeout(guard);
-    _syncBusy = false;
-    setSyncStatus('idle');
-  }).catch(function(){ clearTimeout(guard); _syncBusy=false; setSyncStatus('error'); });
+      clearTimeout(guard); _syncBusy = false; setSyncStatus('idle');
+    })
+    .catch(function(){ clearTimeout(guard); _syncBusy = false; setSyncStatus('error'); });
 }
 
-window.addEventListener('online',  function(){ setSyncStatus('idle'); cloudPush(); });
-window.addEventListener('offline', function(){ setSyncStatus('offline'); });
-
-// Pull imediato ao voltar pra aba — corrige atraso de minutos quando navegador suspende setInterval
-document.addEventListener('visibilitychange', function(){
-  if(document.visibilityState === 'visible'){
-    cloudPush();
-    if(pullTimer) clearInterval(pullTimer);
-    pullTimer = setInterval(cloudPush, POLL_MS);
-  }
-});
-
 function iniciarSync(){
-  // O ciclo usa cloudPush, que faz GET (puxa+merge mudanças do colega) + PUT (envia as suas).
-  // Assim, marcações que falharam num envio anterior são reenviadas automaticamente no próximo ciclo,
-  // e mudanças do outro estoquista chegam no mesmo ciclo. Resolve "não aparece pro outro".
   cloudPush();
   if(pullTimer) clearInterval(pullTimer);
   pullTimer = setInterval(cloudPush, POLL_MS);
 }
+
 function forcarSync(){ cloudPush(); }
 
-// Reset automático à meia-noite: novo dia = novas chaves = tudo limpo
+// ── Envia lista de quebras (planilha) para o Firebase ──
+function pushDados(tentativa){
+  tentativa = tentativa || 1;
+  if(!navigator.onLine || !dados || dados.length === 0) return;
+  console.log('[pushDados] tentativa', tentativa, '| itens:', dados.length);
+
+  fetch(_fbDadosURL(), {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({dados: dados, ts: Date.now()})
+  })
+  .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+  .then(function(){
+    console.log('[pushDados] OK');
+    setSyncStatus('idle');
+    alert('✅ Planilha enviada para a nuvem!\n' + dados.length + ' quebras disponíveis para outros usuários.');
+  })
+  .catch(function(e){
+    console.warn('[pushDados] erro tentativa', tentativa, e);
+    if(tentativa < 4){
+      setTimeout(function(){ pushDados(tentativa+1); }, tentativa * 2000);
+    } else {
+      alert('⚠️ Não foi possível enviar a planilha. Verifique a conexão e tente reimportar.');
+      setSyncStatus('error');
+    }
+  });
+}
+
+// ── Poll dedicado: Anderson recebe dados assim que Cosme importar ──
+var _pollDadosTimer = null;
+function _iniciarPollDados(){
+  if(_pollDadosTimer) clearInterval(_pollDadosTimer);
+  if(dados.length > 0) return;
+  _pollDadosTimer = setInterval(function(){
+    if(dados.length > 0){ clearInterval(_pollDadosTimer); _pollDadosTimer = null; return; }
+    fetch(_fbDadosURL())
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if(d && d.dados && Array.isArray(d.dados) && d.dados.length > 0){
+          dados = d.dados.map(function(it){
+            return Object.assign({},it,{_val:it._val?Number(it._val):Infinity});
+          });
+          clearInterval(_pollDadosTimer); _pollDadosTimer = null;
+          render(); prog();
+          console.log('[pollDados] recebidos:', dados.length, 'itens');
+        }
+      })
+      .catch(function(){});
+  }, 4000);
+}
+
+// ── iniciarConferencia: nunca bloqueia, busca Firebase em background ──
+function iniciarConferencia(){
+  // Mostra app imediatamente
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  render(); prog();
+  // Sync começa após 500ms para não bloquear render inicial
+  setTimeout(function(){
+    try{ iniciarSync(); }catch(e){}
+    setSyncStatus(navigator.onLine ? 'idle' : 'offline');
+    _iniciarPollDados();
+    // Busca dados do Firebase em background
+    if(!navigator.onLine) return;
+    Promise.all([
+      fetch(_fbDadosURL()).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
+      fetch(_fbConfURL()).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+    ]).then(function(res){
+      var remDados = res[0], remConf = res[1], mudou = false;
+      if(remDados && remDados.dados && Array.isArray(remDados.dados) && remDados.dados.length > 0){
+        dados = remDados.dados.map(function(it){
+          return Object.assign({},it,{_val:it._val?Number(it._val):Infinity});
+        });
+        mudou = true;
+      }
+      if(remConf && typeof remConf === 'object'){
+        for(var k in remConf){
+          var rem = remConf[k], loc = E[k];
+          if(!rem || typeof rem !== 'object') continue;
+          if((rem.ts||0) > ((loc&&loc.ts)||0)){ E[k] = rem; mudou = true; }
+        }
+        try{ localStorage.setItem(SK, JSON.stringify(E)); }catch(e){}
+      }
+      if(mudou){ render(); prog(); }
+    }).catch(function(e){ console.warn('[iniciarConferencia bg]', e); });
+  }, 500);
+}
+
+// Reset automático à meia-noite
 setInterval(function(){
   var novoSK = 'conf_q_' + _dataKey();
   if(novoSK !== SK){
-    SK = novoSK;
-    E = {};
-    BASKET = 'quebras_' + _dataKey();
-    PANTRY_URL = 'https://getpantry.cloud/apiv1/pantry/' + PANTRY_ID + '/basket/' + BASKET;
-    try { localStorage.setItem(SK, '{}'); } catch(e) {}
+    SK = novoSK; E = {};
+    try{ localStorage.setItem(SK,'{}'); }catch(e){}
     if(pullTimer) clearInterval(pullTimer);
     pullTimer = setInterval(cloudPush, POLL_MS);
-    render();
-    prog();
+    render(); prog();
   }
 }, 60000);
 
@@ -841,16 +936,47 @@ function gerarPDF(){
   doc.save('Quebras_Ausentes_Correcoes_'+dt+'.pdf');
 }
 
-// No standalone, NÃO inicia sync na carga — só após importar a planilha.
-// (montarQuebras() chama render() + iniciarSync() quando os dados estão prontos.)
-// Pede o nome do estoquista logo de cara, se ainda não tiver.
-if(ME){
-  var bn=document.getElementById('btnNome');
-  if(bn)bn.textContent='👤 '+ME;
-} else {
-  var m=document.getElementById('nomeModal');
-  if(m)m.style.display='flex';
-}
+// ─── iniciarConferencia ──────────────────────────────────────────
+// Chamada após o usuário ser identificado. Tenta buscar dados da nuvem;
+// se houver dados, mostra o app direto. Se não houver (cesta vazia ou
+// sem planilha importada), mostra o app com mensagem de "nenhuma quebra".
+// Se o usuário for Admin (Cosme), mostra também o botão de importar.
+// ─── BOOT ───────────────────────────────────────────────────────
+// Sempre começa pedindo quem é o usuário. Se já houver nome salvo de antes,
+// re-aplica a permissão automaticamente (sem precisar escolher de novo).
+(function bootInicial(){
+  // Abre o app imediatamente — sem spinner, sem esperar rede
+  var sp = document.getElementById('splash');
+  if(sp) sp.style.display = 'none';
+  var ap = document.getElementById('app');
+  if(ap) ap.style.display = 'block';
+
+  var nomeSalvo = '';
+  try { nomeSalvo = localStorage.getItem('estoquista_nome') || ''; } catch(e){}
+  var adminSalvo = false;
+  try { adminSalvo = localStorage.getItem('is_admin') === '1'; } catch(e){}
+
+  if(nomeSalvo){
+    isAdmin = adminSalvo;
+    ME = nomeSalvo;
+    var bn = document.getElementById('btnNome');
+    if(bn) bn.textContent = (isAdmin ? '👑 ' : '👤 ') + ME;
+    var bi = document.getElementById('btnImport');
+    if(bi) bi.style.display = isAdmin ? 'inline-block' : 'none';
+    render(); prog();
+    // Sync em background após 500ms
+    setTimeout(function(){
+      try{ iniciarSync(); }catch(e){}
+      setSyncStatus(navigator.onLine ? 'idle' : 'offline');
+      _iniciarPollDados();
+    }, 500);
+  } else {
+    // Sem nome: mostra modal por cima do app vazio
+    render(); prog();
+    var m = document.getElementById('nomeModal');
+    if(m) m.style.display = 'flex';
+  }
+})();
 
 
 // ═══════════════════════════════════════════════════════════════
@@ -879,8 +1005,7 @@ function _gLastro(cod,name){var s=String(cod).trim();if(lastroSkuDB[s])return la
 function processarArquivo(file){
   if(!file)return;
   if(typeof XLSX==='undefined'){alert('Biblioteca de planilha ainda carregando. Aguarde e tente de novo.');return;}
-  var sp=document.getElementById('splash');
-  if(sp){sp.querySelector('.splash-tit').textContent='Lendo planilha...';}
+  // splash já está oculto, nada a fazer aqui
   var reader=new FileReader();
   reader.onload=function(evt){
     try{
@@ -936,12 +1061,11 @@ function montarQuebras(rows,fileName){
     return a._val-b._val;
   });
 
-  // Esconde splash, mostra app
-  var sp=document.getElementById('splash'); if(sp)sp.style.display='none';
-  var ap=document.getElementById('app'); if(ap)ap.style.display='block';
+  // App já está visível — só renderiza e envia para o Firebase
   render();
-  iniciarSync();
   setSyncStatus(navigator.onLine?'idle':'offline');
+  pushDados();
+  setTimeout(pushDados, 3000);
 }
 
 function reimportar(){
