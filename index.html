@@ -5,152 +5,432 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Conferência de Quebras</title>
 <meta name="theme-color" content="#1A3770">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A3770'/%3E%3Cpath d='M12 22l4-6h32l4 6H12z' fill='%23ffffff' opacity='.3'/%3E%3Crect x='10' y='22' width='44' height='30' rx='3' fill='%23ffffff' opacity='.15'/%3E%3Crect x='10' y='22' width='44' height='30' rx='3' fill='none' stroke='%23ffffff' stroke-width='2.5'/%3E%3Cpath d='M12 22l4-6h32l4 6' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linejoin='round'/%3E%3Cpath d='M24 22v4a8 8 0 0016 0v-4' fill='none' stroke='%2334C759' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A3770'/%3E%3Cpath d='M12 22l4-6h32l4 6H12z' fill='%23ffffff' opacity='.3'/%3E%3Crect x='10' y='22' width='44' height='30' rx='3' fill='%23ffffff' opacity='.15'/%3E%3Crect x='10' y='22' width='44' height='30' rx='3' fill='none' stroke='%23ffffff' stroke-width='2.5'/%3E%3Cpath d='M12 22l4-6h32l4 6' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linejoin='round'/%3E%3Cpath d='M24 22v4a8 8 0 0016 0v-4' fill='none' stroke='%2334C759' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Quebras">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
+/* ── Reset & Base ── */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F2F7;padding-bottom:90px}
-.hdr{position:sticky;top:0;z-index:100;background:#1A3770;color:#fff;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 2px 10px rgba(0,0,0,.3)}
-.hdr h1{font-size:13px;font-weight:800;letter-spacing:.03em;flex:1;white-space:nowrap}
-.ptxt{font-size:10px;opacity:.75;white-space:nowrap}
-.btn-pdf{background:#34C759;color:#fff;border:none;border-radius:9px;padding:8px 13px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
-.btn-pdf:active{opacity:.75}
-.pbar-bg{position:sticky;top:49px;z-index:99;background:#D1D1D6;height:3px}
-.pbar{height:3px;background:#34C759;transition:width .3s;width:0}
-.cards{padding:10px 12px;display:flex;flex-direction:column;gap:12px}
-.card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.10)}
-.card.fant{border-left:4px solid #FF9500;background:#FFFBEB}
-.chdr{display:flex;align-items:center;justify-content:space-between;padding:11px 14px 9px;border-bottom:1px solid #F2F2F7;gap:8px}
-.etq-a{font-size:14px;font-weight:800;color:#1A3770;text-decoration:none;background:#EEF2FF;padding:4px 10px;border-radius:8px;letter-spacing:.02em}
-.etq-s{font-size:14px;font-weight:800;color:#8E8E93;background:#F2F2F7;padding:4px 10px;border-radius:8px}
-.bdg{font-size:10px;font-weight:800;padding:4px 10px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
-.cbdy{padding:11px 14px 14px}
-.nome{font-size:13px;font-weight:600;color:#1C1C1E;margin-bottom:9px;line-height:1.4}
-.qlbl{font-size:9px;font-weight:700;color:#8E8E93;text-transform:uppercase;letter-spacing:.05em}
-.qval{font-size:16px;font-weight:800;color:#1C1C1E}
-.sgrp{display:flex;gap:6px;margin-top:4px}
-.sbtn{flex:1;padding:13px 2px;border:2px solid #E5E5EA;border-radius:12px;background:#fff;font-size:11px;font-weight:800;color:#8E8E93;cursor:pointer;text-align:center;transition:all .12s;min-height:46px;-webkit-tap-highlight-color:transparent}
-.sbtn.pres.on{background:#34C759;border-color:#34C759;color:#fff}
-.sbtn.ause.on{background:#FF3B30;border-color:#FF3B30;color:#fff}
-.sbtn.corr.on{background:#FF9500;border-color:#FF9500;color:#fff}
-.obs-inp{margin-top:8px;width:100%;border:1.5px solid #E5E5EA;border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit;color:#1C1C1E;outline:none}
-.obs-inp:focus{border-color:#FF9500}
-.ftag{display:inline-block;font-size:9px;font-weight:700;color:#92480A;background:#FFF0CC;padding:2px 7px;border-radius:8px;margin-left:5px;vertical-align:middle}
-.sku-sep{background:#1A3770;color:#fff;padding:9px 13px;border-radius:11px;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
-.sku-sep:first-child{margin-top:0}
-.sku-sep-nome{font-size:11px;font-weight:800;letter-spacing:.02em;line-height:1.3;flex:1}
-.sku-sep-cnt{font-size:9px;font-weight:700;background:rgba(255,255,255,0.18);padding:2px 8px;border-radius:8px;white-space:nowrap}
-.search-bar{position:sticky;top:52px;z-index:97;background:#F2F2F7;padding:9px 11px 7px;display:flex;gap:7px;align-items:center;border-bottom:1px solid #E5E5EA}
-.search-inp{flex:1;border:1.5px solid #D1D1D6;border-radius:10px;padding:9px 12px;font-size:13px;font-family:inherit;color:#1C1C1E;background:#fff;outline:none;-webkit-appearance:none}
-.search-inp:focus{border-color:#1A3770;box-shadow:0 0 0 3px rgba(26,55,112,0.12)}
-.search-clr{background:#E5E5EA;color:#1C1C1E;border:none;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
-.search-clr:active{opacity:.7}
-.sum-btn{background:#5856D6;color:#fff;border:none;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px}
-.sum-btn.active{background:#FF9500}
+:root{
+  --blue:#1A3770;
+  --blue-mid:#2B4E9E;
+  --accent:#5856D6;
+  --green:#34C759;
+  --red:#FF3B30;
+  --orange:#FF9500;
+  --yellow:#FFCC00;
+  --bg:#F0F2F7;
+  --surface:#fff;
+  --surface2:#F5F6FA;
+  --border:#E2E5ED;
+  --text:#1C1C1E;
+  --text2:#636366;
+  --text3:#AEAEB2;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 16px rgba(0,0,0,.10),0 2px 6px rgba(0,0,0,.07);
+  --shadow-lg:0 10px 40px rgba(0,0,0,.18),0 4px 12px rgba(0,0,0,.10);
+  --radius:14px;
+  --radius-sm:9px;
+  --radius-lg:20px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);padding-bottom:80px;color:var(--text)}
+
+/* ── Header Fluent ── */
+.hdr{
+  position:sticky;top:0;z-index:100;
+  background:rgba(26,55,112,0.96);
+  backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  color:#fff;
+  padding:0 14px;
+  height:52px;
+  display:flex;align-items:center;gap:8px;
+  box-shadow:0 1px 0 rgba(255,255,255,0.1),0 2px 12px rgba(0,0,0,.25);
+}
+.hdr-title{font-size:14px;font-weight:800;letter-spacing:.03em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-count{font-size:10px;opacity:.7;white-space:nowrap;flex-shrink:0}
+.hdr-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+
+/* Botões do header — compactos para mobile */
+.hdr-btn{
+  display:flex;align-items:center;justify-content:center;
+  height:32px;
+  border:none;border-radius:8px;
+  font-size:11px;font-weight:700;cursor:pointer;
+  white-space:nowrap;transition:all .15s ease;
+  padding:0 10px;gap:4px;
+}
+.hdr-btn:active{transform:scale(.93);opacity:.85}
+.hdr-btn-icon{width:32px;padding:0}
+.hdr-btn-pdf{background:var(--green);color:#fff}
+.hdr-btn-import{background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.hdr-btn-user{background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,.15)}
+
+/* ── Sync dot ── */
+.sync-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:#8E8E93;flex-shrink:0;cursor:pointer;
+  transition:background .3s;
+  box-shadow:0 0 0 2px rgba(255,255,255,.3);
+}
+.sync-dot:active{transform:scale(.8)}
+
+/* ── Progress bar ── */
+.pbar-bg{position:sticky;top:52px;z-index:99;background:rgba(0,0,0,.12);height:3px}
+.pbar{height:3px;background:linear-gradient(90deg,var(--green),#2EE87A);transition:width .4s cubic-bezier(.4,0,.2,1);width:0}
+
+/* ── Search bar ── */
+.search-bar{
+  position:sticky;top:55px;z-index:97;
+  background:rgba(240,242,247,0.95);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  padding:8px 12px;
+  display:flex;gap:6px;align-items:center;
+  border-bottom:1px solid var(--border);
+}
+.search-inp{
+  flex:1;min-width:0;
+  border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  padding:9px 12px;font-size:13px;font-family:inherit;
+  color:var(--text);background:var(--surface);outline:none;
+  -webkit-appearance:none;transition:border-color .15s,box-shadow .15s;
+}
+.search-inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(88,86,214,.12)}
+.search-inp::placeholder{color:var(--text3)}
+
+.btn-srch-clr{
+  height:36px;padding:0 10px;
+  background:var(--surface2);color:var(--text2);
+  border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;
+  transition:all .12s;flex-shrink:0;
+}
+.btn-srch-clr:active{opacity:.7}
+.sum-btn{
+  height:36px;padding:0 10px;
+  background:var(--accent);color:#fff;
+  border:none;border-radius:var(--radius-sm);
+  font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;
+  display:flex;align-items:center;gap:3px;
+  transition:all .12s;flex-shrink:0;
+}
+.sum-btn.active{background:var(--orange)}
 .sum-btn:active{opacity:.8}
-.no-res{text-align:center;padding:40px 20px;color:#8E8E93;font-size:13px;font-weight:600}
-.card.selecionado{box-shadow:0 0 0 3px #5856D6,0 1px 3px rgba(0,0,0,.09)}
-.card-sel-mark{display:none;align-items:center;justify-content:center;width:22px;height:22px;background:#5856D6;color:#fff;border-radius:50%;font-size:11px;font-weight:900;flex-shrink:0}
+
+/* ── Validated panel ── */
+.validated-panel{
+  margin:10px 12px 0;
+  background:var(--surface);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+.validated-toggle{
+  width:100%;display:flex;align-items:center;gap:10px;
+  padding:11px 14px;background:none;border:none;cursor:pointer;
+  text-align:left;transition:background .12s;
+}
+.validated-toggle:active{background:var(--surface2)}
+.validated-toggle-icon{
+  width:22px;height:22px;border-radius:50%;
+  background:linear-gradient(135deg,var(--green),#2EE87A);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:12px;font-weight:900;flex-shrink:0;
+  box-shadow:0 2px 6px rgba(52,199,89,.35);
+}
+.validated-toggle-label{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.validated-toggle-count{
+  font-size:11px;font-weight:700;
+  background:var(--green);color:#fff;
+  padding:2px 9px;border-radius:20px;
+}
+.validated-toggle-arrow{
+  font-size:10px;color:var(--text3);
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+  flex-shrink:0;
+}
+.validated-toggle-arrow.open{transform:rotate(180deg)}
+.validated-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .3s cubic-bezier(.4,0,.2,1);
+}
+.validated-body.open{max-height:4000px}
+.validated-inner{border-top:1px solid var(--border);padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+
+/* mini-card para validadas */
+.mini-card{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 11px;
+  background:var(--surface2);border-radius:10px;
+  border:1px solid var(--border);
+}
+.mini-etq{font-size:12px;font-weight:800;color:var(--blue);background:#EEF2FF;padding:3px 8px;border-radius:6px}
+.mini-nome{font-size:11px;color:var(--text2);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mini-st{font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap;text-transform:uppercase}
+.mini-st.pres{background:#E8FBF0;color:#1A7A3A}
+.mini-st.ause{background:#FFEBEA;color:#C0251C}
+.mini-st.corr{background:#FFF3E0;color:#9C5A00}
+.mini-undo{
+  width:28px;height:28px;flex-shrink:0;
+  background:var(--border);color:var(--text2);
+  border:none;border-radius:7px;font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.mini-undo:active{background:#E5E5EA;transform:scale(.9)}
+
+/* ── Cards area ── */
+.cards{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.card{
+  background:var(--surface);
+  border-radius:var(--radius);
+  overflow:hidden;
+  box-shadow:var(--shadow-sm);
+  border:1px solid var(--border);
+  transition:box-shadow .2s;
+  position:relative;
+}
+.card.fant{border-left:4px solid var(--orange);background:#FFFCF5}
+.card.selecionado{box-shadow:0 0 0 2.5px var(--accent),var(--shadow-sm)}
+
+/* Card header */
+.chdr{
+  display:flex;align-items:center;
+  padding:10px 12px 8px;
+  border-bottom:1px solid var(--surface2);
+  gap:8px;
+}
+.chdr-left{display:flex;align-items:center;flex-wrap:wrap;gap:5px;flex:1;min-width:0}
+.etq-a{
+  font-size:13px;font-weight:800;color:var(--blue);
+  text-decoration:none;background:#EEF2FF;
+  padding:3px 9px;border-radius:7px;letter-spacing:.02em;
+  white-space:nowrap;
+}
+.etq-a:hover{background:#DDE5FF}
+.etq-s{font-size:13px;font-weight:800;color:var(--text2);background:var(--surface2);padding:3px 9px;border-radius:7px;white-space:nowrap}
+.ftag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;color:#92480A;background:#FFF0CC;padding:2px 7px;border-radius:6px}
+.chdr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.card-sel-mark{display:none;align-items:center;justify-content:center;width:20px;height:20px;background:var(--accent);color:#fff;border-radius:50%;font-size:10px;font-weight:900;flex-shrink:0}
 .card.selecionado .card-sel-mark{display:flex}
-.sum-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(2px)}
-.sum-modal-bg.show{display:flex}
-.sum-modal{background:#fff;border-radius:18px;max-width:420px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,0.3)}
-.sum-modal-hdr{background:#5856D6;color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
-.sum-modal-hdr h2{font-size:14px;font-weight:800;letter-spacing:.02em}
-.sum-modal-close{background:rgba(255,255,255,0.18);color:#fff;border:none;width:28px;height:28px;border-radius:50%;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.sum-modal-bdy{padding:14px 18px;overflow-y:auto;flex:1}
-.sum-total-bg{background:linear-gradient(135deg,#5856D6,#7B79E0);color:#fff;border-radius:14px;padding:14px;margin-bottom:14px;text-align:center}
+.bdg{font-size:9px;font-weight:800;padding:3px 9px;border-radius:8px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+
+/* Card body */
+.cbdy{padding:10px 12px 12px}
+.nome{font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.4}
+.meta-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.meta-date{font-size:10px;color:var(--text3);font-weight:500}
+.meta-nums{display:flex;gap:14px}
+.qlbl{font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.qval{font-size:15px;font-weight:800;color:var(--text)}
+
+/* Action buttons — 3 colunas, tap-friendly */
+.sgrp{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:2px}
+.sbtn{
+  padding:11px 4px;
+  border:1.5px solid var(--border);border-radius:10px;
+  background:var(--surface);
+  font-size:10px;font-weight:800;color:var(--text2);
+  cursor:pointer;text-align:center;
+  transition:all .13s ease;min-height:42px;
+  -webkit-tap-highlight-color:transparent;
+  line-height:1.3;
+}
+.sbtn:active{transform:scale(.95)}
+.sbtn.pres.on{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 3px 8px rgba(52,199,89,.3)}
+.sbtn.ause.on{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 3px 8px rgba(255,59,48,.3)}
+.sbtn.corr.on{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:0 3px 8px rgba(255,149,0,.3)}
+
+.obs-inp{
+  margin-top:8px;width:100%;
+  border:1.5px solid var(--border);border-radius:8px;
+  padding:8px 10px;font-size:12px;font-family:inherit;
+  color:var(--text);outline:none;background:var(--surface2);
+}
+.obs-inp:focus{border-color:var(--orange);background:var(--surface)}
+
+/* "by" info */
+.by-info{display:flex;align-items:center;gap:5px;margin-top:8px;padding:6px 10px;border-radius:8px;font-size:10px;font-weight:600}
+.by-info.by-outros{background:#EEF2FF;color:var(--accent)}
+.by-info.by-eu{background:var(--surface2);color:var(--text2)}
+.by-info b{font-weight:900}
+
+/* SKU separator */
+.sku-sep{
+  border-radius:10px;display:flex;align-items:center;justify-content:space-between;
+  gap:8px;margin-top:2px;padding:8px 12px;
+}
+.sku-sep:first-child{margin-top:0}
+.sku-sep-nome{font-size:11px;font-weight:800;letter-spacing:.02em;line-height:1.3;flex:1;color:#fff}
+.sku-sep-cnt{font-size:9px;font-weight:700;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:8px;white-space:nowrap;color:#fff}
+
+/* ── Empty / loading states ── */
+.no-res{text-align:center;padding:40px 20px;color:var(--text2);font-size:13px;font-weight:600}
+
+/* ── Modals ── */
+.modal-bg{
+  display:none;position:fixed;inset:0;
+  background:rgba(15,15,30,0.55);z-index:200;
+  align-items:center;justify-content:center;padding:16px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.modal-bg.show{display:flex}
+.modal{
+  background:var(--surface);border-radius:var(--radius-lg);
+  max-width:420px;width:100%;max-height:88vh;overflow:hidden;
+  display:flex;flex-direction:column;
+  box-shadow:var(--shadow-lg);
+  border:1px solid rgba(255,255,255,.8);
+}
+.modal-hdr{
+  padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.modal-hdr h2{font-size:14px;font-weight:800;letter-spacing:.02em;color:var(--text)}
+.modal-close{
+  background:var(--surface2);color:var(--text2);border:none;
+  width:28px;height:28px;border-radius:50%;
+  font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.modal-close:active{transform:scale(.88)}
+.modal-body{padding:14px 16px;overflow-y:auto;flex:1}
+
+/* Sum modal specific */
+.sum-total-bg{
+  background:linear-gradient(135deg,var(--accent),#7B79E0);
+  color:#fff;border-radius:14px;padding:14px;margin-bottom:12px;text-align:center;
+}
 .sum-total-lb{font-size:9px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
 .sum-total-vl{font-size:26px;font-weight:900;letter-spacing:-.02em}
 .sum-total-sub{font-size:11px;opacity:.85;margin-top:3px;font-weight:600}
-.sum-grp{background:#F2F2F7;border-radius:11px;padding:12px;margin-bottom:9px}
-.sum-grp-nm{font-size:11px;font-weight:800;color:#1A3770;margin-bottom:8px;line-height:1.3}
-.sum-grp-info{font-size:10px;color:#8E8E93;margin-bottom:7px;font-weight:600}
-.sum-grp-res{display:flex;gap:10px;align-items:center;background:#fff;border-radius:8px;padding:9px 11px}
+.sum-grp{background:var(--surface2);border-radius:11px;padding:12px;margin-bottom:8px}
+.sum-grp-nm{font-size:11px;font-weight:800;color:var(--blue);margin-bottom:6px;line-height:1.3}
+.sum-grp-info{font-size:10px;color:var(--text2);margin-bottom:6px;font-weight:600}
+.sum-grp-res{display:flex;gap:10px;align-items:center;background:var(--surface);border-radius:8px;padding:9px 11px}
 .sum-grp-res-it{flex:1;text-align:center}
-.sum-grp-res-it.div{border-left:1px solid #E5E5EA;border-right:1px solid #E5E5EA}
-.sum-grp-res-lb{font-size:8px;font-weight:700;color:#8E8E93;text-transform:uppercase;letter-spacing:.05em}
-.sum-grp-res-vl{font-size:17px;font-weight:900;color:#1C1C1E;margin-top:1px}
-.sum-grp-res-vl.cx{color:#5856D6}
-.sum-grp-res-vl.un{color:#FF9500}
-.sum-grp-etqs{font-size:9px;color:#8E8E93;margin-top:7px;font-style:italic;line-height:1.4}
-.sum-empty{text-align:center;padding:30px 10px;color:#8E8E93;font-size:13px}
-.sync-dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:#8E8E93;margin-left:6px;cursor:pointer;transition:background .25s;box-shadow:0 0 0 2px rgba(255,255,255,0.4)}
-.sync-dot:active{transform:scale(.85)}
-.by-info{display:flex;align-items:center;gap:5px;margin-top:10px;padding:7px 10px;border-radius:9px;font-size:11px;font-weight:600}
-.by-info.by-outros{background:#EEF2FF;color:#5856D6}
-.by-info.by-eu{background:#F2F2F7;color:#636366}
-.by-info b{font-weight:900}
-.card{position:relative}
-/* ── Tela de importação (splash) ── */
-.splash{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:30px;text-align:center;background:#F2F2F7}
-.splash-ic{font-size:54px;margin-bottom:16px}
-.splash-tit{font-size:19px;font-weight:900;color:#1A3770;margin-bottom:8px}
-.splash-sub{font-size:13px;color:#6C6C70;line-height:1.55;max-width:330px;margin-bottom:22px}
-.btn-import{background:#1A3770;color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:.02em}
-.btn-import:active{transform:scale(.97)}
-.btn-reimport{background:#5856D6;color:#fff;border:none;border-radius:9px;padding:8px 12px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
-.splash-spin{width:34px;height:34px;border:3px solid #E5E5EA;border-top-color:#1A3770;border-radius:50%;animation:_spin .8s linear infinite;margin:6px auto 0}
-@keyframes _spin{to{transform:rotate(360deg)}}
+.sum-grp-res-it.div{border-left:1px solid var(--border);border-right:1px solid var(--border)}
+.sum-grp-res-lb{font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.sum-grp-res-vl{font-size:17px;font-weight:900;color:var(--text);margin-top:1px}
+.sum-grp-res-vl.cx{color:var(--accent)}
+.sum-grp-res-vl.un{color:var(--orange)}
+.sum-grp-etqs{font-size:9px;color:var(--text3);margin-top:6px;font-style:italic;line-height:1.4}
+.sum-empty{text-align:center;padding:30px 10px;color:var(--text2);font-size:13px}
+
+/* ── Splash / user modal ── */
+.modal-user-btn{
+  width:100%;padding:14px;border:none;border-radius:12px;
+  font-size:14px;font-weight:800;cursor:pointer;
+  transition:all .13s;letter-spacing:.01em;
+}
+.modal-user-btn:active{transform:scale(.97)}
+.modal-user-btn-main{background:var(--blue);color:#fff}
+.modal-user-btn-sec{background:var(--accent);color:#fff}
+
+/* ── Import button ── */
+.btn-reimport{background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:0 10px;height:32px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+
+/* ── Fluent elevation helper ── */
+.fluent-card{
+  background:rgba(255,255,255,0.75);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+}
+
+@media(prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
 </style>
 </head>
 <body>
-<!-- SPLASH: tela inicial mostra o seletor de usuário, não a importação direta -->
-<div id="splash" style="display:none"></div>
 
 <div id="app" style="display:none">
+  <!-- HEADER -->
   <div class="hdr">
-    <h1>Conferência de Quebras</h1>
-    <span id="ptxt" class="ptxt">0/0 conferidos</span>
-    <span id="syncDot" class="sync-dot" title="Sincronizado" onclick="forcarSync()"></span>
-    <button class="btn-pdf" onclick="gerarPDF()">📷 PDF</button>
-    <!-- Botão de importar: só aparece para o Admin (Cosme) autenticado -->
-    <button id="btnImport" class="btn-reimport" onclick="reimportar()" title="Importar planilha (Admin)" style="display:none">📂</button>
-    <button id="btnNome" onclick="mudarNome()" style="background:rgba(255,255,255,0.18);color:#fff;border:none;border-radius:9px;padding:6px 11px;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap;letter-spacing:.02em">👤</button>
+    <div class="hdr-title">Conferência de Quebras</div>
+    <span id="ptxt" class="hdr-count">0/0</span>
+    <div class="hdr-actions">
+      <span id="syncDot" class="sync-dot" title="Sincronizado" onclick="forcarSync()"></span>
+      <button class="hdr-btn hdr-btn-pdf" onclick="gerarPDF()" title="Gerar PDF">📄 PDF</button>
+      <button id="btnImport" class="hdr-btn hdr-btn-import" onclick="reimportar()" title="Importar planilha" style="display:none">📂</button>
+      <button id="btnNome" onclick="mudarNome()" class="hdr-btn hdr-btn-user">👤</button>
+    </div>
   </div>
+
+  <!-- PROGRESS BAR -->
   <div class="pbar-bg"><div class="pbar" id="pbar"></div></div>
+
+  <!-- SEARCH + TOOLS BAR -->
   <div class="search-bar">
-    <input id="srch" class="search-inp" type="text" placeholder="Buscar por etiqueta ou SKU..." autocomplete="off"/>
-    <button id="srchClr" class="search-clr" onclick="limparBusca()">Limpar</button>
-    <button id="sumBtn" class="sum-btn" onclick="toggleSomaModo()">&#931; Somar</button>
+    <input id="srch" class="search-inp" type="text" placeholder="🔍  Buscar etiqueta ou SKU..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+    <button id="srchClr" class="btn-srch-clr" onclick="limparBusca()">Limpar</button>
+    <button id="sumBtn" class="sum-btn" onclick="toggleSomaModo()">Σ Somar</button>
   </div>
+
+  <!-- VALIDATED PANEL (accordion) -->
+  <div id="validatedPanel" class="validated-panel" style="display:none">
+    <button class="validated-toggle" onclick="toggleValidated()">
+      <div class="validated-toggle-icon">✓</div>
+      <span class="validated-toggle-label">Validadas</span>
+      <span id="validatedCount" class="validated-toggle-count">0</span>
+      <span id="validatedArrow" class="validated-toggle-arrow">▼</span>
+    </button>
+    <div id="validatedBody" class="validated-body">
+      <div id="validatedInner" class="validated-inner"></div>
+    </div>
+  </div>
+
+  <!-- MAIN CARDS -->
   <div class="cards" id="cards"></div>
 </div>
 
+<!-- FILE INPUT -->
 <input type="file" id="fileInputGlobal" accept=".xlsx,.xls,.csv" style="display:none" onchange="processarArquivo(this.files[0])"/>
 
-<div id="sumModal" class="sum-modal-bg" onclick="if(event.target===this)fecharSomaModal()">
-  <div class="sum-modal">
-    <div class="sum-modal-hdr"><h2>&#931; Totalizador por Caixas</h2><button class="sum-modal-close" onclick="fecharSomaModal()">&times;</button></div>
-    <div id="sumModalBdy" class="sum-modal-bdy"></div>
+<!-- MODAL: Soma/Totalizador -->
+<div id="sumModal" class="modal-bg" onclick="if(event.target===this)fecharSomaModal()">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2>Σ Totalizador por Caixas</h2>
+      <button class="modal-close" onclick="fecharSomaModal()">×</button>
+    </div>
+    <div id="sumModalBdy" class="modal-body"></div>
   </div>
 </div>
 
-<!-- MODAL: seleção de usuário -->
-<div id="nomeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)">
-  <div style="background:#fff;border-radius:16px;padding:22px;max-width:340px;width:100%;display:flex;flex-direction:column;gap:11px">
-    <div style="font-size:16px;font-weight:900;color:#1A3770;text-align:center;margin-bottom:2px">Quem é você?</div>
-    <button onclick="selecionarUsuario('Cosme')" style="padding:14px;border:none;border-radius:12px;background:#1A3770;color:#fff;font-size:15px;font-weight:800;cursor:pointer">👑 Cosme (Admin)</button>
-    <button onclick="selecionarUsuario('Anderson')" style="padding:14px;border:none;border-radius:12px;background:#5856D6;color:#fff;font-size:15px;font-weight:800;cursor:pointer">📋 Anderson</button>
-    <div style="font-size:11px;color:#8E8E93;text-align:center;margin:2px 0">ou entre como convidado:</div>
+<!-- MODAL: Seleção de usuário -->
+<div id="nomeModal" style="display:none;position:fixed;inset:0;background:rgba(15,15,30,0.6);z-index:300;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(10px)">
+  <div style="background:#fff;border-radius:20px;padding:22px;max-width:340px;width:100%;display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="font-size:17px;font-weight:900;color:var(--blue);text-align:center;margin-bottom:2px">Quem é você?</div>
+    <button onclick="selecionarUsuario('Cosme')" class="modal-user-btn modal-user-btn-main">👑 Cosme (Admin)</button>
+    <button onclick="selecionarUsuario('Anderson')" class="modal-user-btn modal-user-btn-sec">📋 Anderson</button>
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin:2px 0">ou entre como convidado:</div>
     <div style="display:flex;gap:8px">
-      <input id="nomeInput" placeholder="Seu nome..." style="flex:1;border:1.5px solid #D1D1D6;border-radius:10px;padding:11px;font-size:13px" onkeydown="if(event.key==='Enter')selecionarUsuario(this.value)"/>
-      <button onclick="selecionarUsuario(document.getElementById('nomeInput').value)" style="padding:12px 18px;border:none;border-radius:10px;background:#34C759;color:#fff;font-size:13px;font-weight:800;cursor:pointer">OK</button>
+      <input id="nomeInput" placeholder="Seu nome..." style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:11px;font-size:13px;outline:none" onkeydown="if(event.key==='Enter')selecionarUsuario(this.value)"/>
+      <button onclick="selecionarUsuario(document.getElementById('nomeInput').value)" style="padding:11px 16px;border:none;border-radius:10px;background:var(--green);color:#fff;font-size:13px;font-weight:800;cursor:pointer">OK</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: senha do Admin -->
-<div id="senhaModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:310;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)">
-  <div style="background:#fff;border-radius:16px;padding:22px;max-width:320px;width:100%;display:flex;flex-direction:column;gap:12px">
-    <div style="font-size:15px;font-weight:900;color:#1A3770;text-align:center">🔒 Senha do Admin</div>
-    <div style="font-size:12px;color:#8E8E93;text-align:center;line-height:1.4">Digite a senha para liberar a importação de planilhas.</div>
-    <input id="senhaInput" type="password" placeholder="Senha..." style="border:1.5px solid #D1D1D6;border-radius:10px;padding:12px;font-size:14px;text-align:center" onkeydown="if(event.key==='Enter')confirmarSenhaAdmin()"/>
+<!-- MODAL: Senha Admin -->
+<div id="senhaModal" style="display:none;position:fixed;inset:0;background:rgba(15,15,30,0.6);z-index:310;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(10px)">
+  <div style="background:#fff;border-radius:20px;padding:22px;max-width:320px;width:100%;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="font-size:15px;font-weight:900;color:var(--blue);text-align:center">🔒 Senha do Admin</div>
+    <div style="font-size:12px;color:var(--text2);text-align:center;line-height:1.4">Digite a senha para liberar a importação de planilhas.</div>
+    <input id="senhaInput" type="password" placeholder="Senha..." style="border:1.5px solid var(--border);border-radius:10px;padding:12px;font-size:14px;text-align:center;outline:none" onkeydown="if(event.key==='Enter')confirmarSenhaAdmin()"/>
     <div style="display:flex;gap:8px">
-      <button onclick="fecharSenhaModal()" style="flex:1;padding:12px;border:none;border-radius:10px;background:#E5E5EA;color:#1C1C1E;font-size:13px;font-weight:800;cursor:pointer">Só conferir</button>
-      <button onclick="confirmarSenhaAdmin()" style="flex:1;padding:12px;border:none;border-radius:10px;background:#1A3770;color:#fff;font-size:13px;font-weight:800;cursor:pointer">Entrar</button>
+      <button onclick="fecharSenhaModal()" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--surface2);color:var(--text);font-size:13px;font-weight:800;cursor:pointer">Só conferir</button>
+      <button onclick="confirmarSenhaAdmin()" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--blue);color:#fff;font-size:13px;font-weight:800;cursor:pointer">Entrar</button>
     </div>
-    <div id="senhaErro" style="display:none;font-size:11px;color:#FF3B30;text-align:center;font-weight:700">Senha incorreta.</div>
+    <div id="senhaErro" style="display:none;font-size:11px;color:var(--red);text-align:center;font-weight:700">Senha incorreta.</div>
   </div>
 </div>
 
@@ -158,20 +438,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 var dados = [];
 var ME = '';
 var isAdmin = false;
+var _validatedOpen = false;
+
+// ── Validated panel toggle ──
+function toggleValidated(){
+  _validatedOpen = !_validatedOpen;
+  var body = document.getElementById('validatedBody');
+  var arrow = document.getElementById('validatedArrow');
+  if(body) body.classList.toggle('open', _validatedOpen);
+  if(arrow) arrow.classList.toggle('open', _validatedOpen);
+}
 
 // ── Gerenciamento de usuário ──
 function selecionarUsuario(nome){
   nome = (nome || '').trim();
   if(!nome){ alert('Digite um nome para continuar.'); return; }
-  // Fecha o modal de nome
   var m = document.getElementById('nomeModal');
   if(m) m.style.display = 'none';
 
   if(nome === 'Cosme'){
-    // Admin: pede senha antes de liberar
     var sm = document.getElementById('senhaModal');
     if(sm){ sm.style.display = 'flex'; setTimeout(function(){ var si=document.getElementById('senhaInput'); if(si)si.focus(); },100); }
-    // Guarda o nome provisório para usar após confirmação da senha
     window._nomeAdmin = nome;
   } else {
     _aplicarUsuario(nome, false);
@@ -182,7 +469,6 @@ function confirmarSenhaAdmin(){
   var inp = document.getElementById('senhaInput');
   var err = document.getElementById('senhaErro');
   var senha = inp ? inp.value : '';
-  // Senha do admin — altere aqui se necessário
   if(senha === 'panutrir2024' || senha === 'admin'){
     if(err) err.style.display = 'none';
     var sm = document.getElementById('senhaModal');
@@ -201,7 +487,6 @@ function fecharSenhaModal(){
   if(inp) inp.value = '';
   var err = document.getElementById('senhaErro');
   if(err) err.style.display = 'none';
-  // Entra sem privilégios de admin
   _aplicarUsuario(window._nomeAdmin || 'Cosme', false);
 }
 
@@ -211,9 +496,9 @@ function _aplicarUsuario(nome, admin){
   try{ localStorage.setItem('estoquista_nome', nome); }catch(e){}
   try{ localStorage.setItem('is_admin', admin ? '1' : '0'); }catch(e){}
   var bn = document.getElementById('btnNome');
-  if(bn) bn.textContent = (isAdmin ? '👑 ' : '👤 ') + ME;
+  if(bn) bn.textContent = (isAdmin ? '👑' : '👤') + ' ' + ME;
   var bi = document.getElementById('btnImport');
-  if(bi) bi.style.display = isAdmin ? 'inline-block' : 'none';
+  if(bi) bi.style.display = isAdmin ? 'inline-flex' : 'none';
   render(); prog();
   setTimeout(function(){
     try{ iniciarSync(); }catch(e){}
@@ -223,7 +508,6 @@ function _aplicarUsuario(nome, admin){
 }
 
 function mudarNome(){
-  // Limpa nome salvo e mostra o modal novamente
   try{ localStorage.removeItem('estoquista_nome'); }catch(e){}
   try{ localStorage.removeItem('is_admin'); }catch(e){}
   ME = ''; isAdmin = false;
@@ -243,7 +527,6 @@ function setSyncStatus(status){
   dot.title = titulos[status] || status;
 }
 
-// Formato de data consistente ddmmyyyy — não depende de locale do browser
 function _dataKey(d){ var dt=d||new Date(); return String(dt.getDate()).padStart(2,'0')+String(dt.getMonth()+1).padStart(2,'0')+dt.getFullYear(); }
 var SK = 'conf_q_' + _dataKey();
 var E = {};
@@ -253,16 +536,12 @@ var modoSoma = false;
 var somaSel = {};
 
 // ═══════════════════════════════════════════════════════════════
-// SINCRONIZAÇÃO PANTRY (cloud) — 2 estoquistas simultâneos
-// ═══════════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════════════
-// FIREBASE REALTIME DATABASE — sincronização em tempo real
+// FIREBASE REALTIME DATABASE
 // ═══════════════════════════════════════════════════════════════
 var FB_URL = 'https://validaquebra-default-rtdb.firebaseio.com';
 var POLL_MS = 5000;
 var PUSH_DEBOUNCE_MS = 1500;
 
-// Chaves do dia
 function _fbDadosURL(){ return FB_URL + '/dados_' + _dataKey() + '.json'; }
 function _fbConfURL(){  return FB_URL + '/conf_'  + _dataKey() + '.json'; }
 
@@ -271,7 +550,6 @@ var pullTimer = null;
 var _syncBusy = false;
 var ultimaMudancaRemota = {};
 
-// ── Envia conferências (E) para o Firebase ──
 function cloudPush(){
   if(!navigator.onLine){ setSyncStatus('offline'); return; }
   if(_syncBusy){ cloudPushDebounced(); return; }
@@ -279,7 +557,6 @@ function cloudPush(){
   setSyncStatus('pushing');
   var guard = setTimeout(function(){ _syncBusy = false; setSyncStatus('error'); }, 15000);
 
-  // Lê remoto, merge, escreve
   fetch(_fbConfURL())
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(remoto){
@@ -347,7 +624,6 @@ function iniciarSync(){
 
 function forcarSync(){ cloudPush(); }
 
-// ── Envia lista de quebras (planilha) para o Firebase ──
 function pushDados(tentativa){
   tentativa = tentativa || 1;
   if(!navigator.onLine || !dados || dados.length === 0) return;
@@ -375,7 +651,6 @@ function pushDados(tentativa){
   });
 }
 
-// ── Poll dedicado: Anderson recebe dados assim que Cosme importar ──
 var _pollDadosTimer = null;
 function _iniciarPollDados(){
   if(_pollDadosTimer) clearInterval(_pollDadosTimer);
@@ -398,18 +673,13 @@ function _iniciarPollDados(){
   }, 4000);
 }
 
-// ── iniciarConferencia: nunca bloqueia, busca Firebase em background ──
 function iniciarConferencia(){
-  // Mostra app imediatamente
-  document.getElementById('splash').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   render(); prog();
-  // Sync começa após 500ms para não bloquear render inicial
   setTimeout(function(){
     try{ iniciarSync(); }catch(e){}
     setSyncStatus(navigator.onLine ? 'idle' : 'offline');
     _iniciarPollDados();
-    // Busca dados do Firebase em background
     if(!navigator.onLine) return;
     Promise.all([
       fetch(_fbDadosURL()).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
@@ -435,7 +705,6 @@ function iniciarConferencia(){
   }, 500);
 }
 
-// Reset automático à meia-noite
 setInterval(function(){
   var novoSK = 'conf_q_' + _dataKey();
   if(novoSK !== SK){
@@ -447,6 +716,7 @@ setInterval(function(){
   }
 }, 60000);
 
+// ── Helpers de data/cor ──
 function sc(d) {
   try {
     var p=d.split('/'),dd=+p[0],mm=+p[1],aa=+p[2];
@@ -477,35 +747,38 @@ function setSt(i,st){
   var est = E[key] || {};
   var stAtual = est.status || '';
 
-  // Se já está marcado e o usuário está mudando para outro status, pedir confirmação
   if (stAtual && stAtual !== st) {
     var labels = { pres: 'PRESENTE', ause: 'AUSENTE', corr: 'CORRIGIDA' };
     var labelAtual = labels[stAtual] || stAtual;
     var labelNovo  = labels[st] || st;
     var msg;
     if (est.by && est.by !== ME) {
-      // Outro estoquista marcou
       var tempoAtras = est.ts ? tempoRelativo(est.ts) : 'pouco tempo';
       msg = 'Esse item foi marcado como ' + labelAtual + '\npor ' + est.by + ' (há ' + tempoAtras + ').\n\nDeseja alterar para ' + labelNovo + '?';
     } else {
-      // Eu mesmo marquei
       msg = 'Esse item já consta como ' + labelAtual + '.\n\nDeseja alterar para ' + labelNovo + '?';
     }
-    if (!confirm(msg)) {
-      return; // cancelou — não muda nada
-    }
+    if (!confirm(msg)) { return; }
   }
 
   salvar(key,'status',st);
-  ['pres','ause','corr'].forEach(function(s,j){
-    var b=document.getElementById('b'+j+'_'+i);
-    if(b){if(s===st)b.classList.add('on');else b.classList.remove('on');}
-  });
-  var ow=document.getElementById('ow_'+i);
-  if(ow)ow.style.display=(st==='corr')?'block':'none';
+  // Marca como validada → re-render move o card para a aba
+  render();
 }
 
-// Devolve "5 min", "2 h", "3 dias" — texto curto para o alerta
+// Desfaz validação de um item (chamado pelo botão ↩ na aba validadas)
+function desfazerValidacao(key){
+  if(E[key]){
+    delete E[key].status;
+    E[key].ts = Date.now();
+    E[key].by = ME||'?';
+    try{localStorage.setItem(SK,JSON.stringify(E));}catch(e){}
+    prog();
+    cloudPushDebounced();
+    render();
+  }
+}
+
 function tempoRelativo(ts){
   var s = Math.floor((Date.now() - ts) / 1000);
   if(s < 60)   return s + ' s';
@@ -522,25 +795,20 @@ function prog(){
   for(var k in E){if(E[k]&&E[k].status)m++;}
   var t=dados.length;
   var el=document.getElementById('ptxt');
-  if(el)el.textContent=m+'/'+t+' conferidos';
+  if(el)el.textContent=m+'/'+t;
   var pb=document.getElementById('pbar');
   if(pb)pb.style.width=(t?(m/t*100):0)+'%';
 }
 
-// Cor estável e suave por SKU: mesmo SKU sempre gera a mesma cor (HSL com matiz por hash).
 var _corSkuCache={};
 function corDoSku(cod){
   var key=String(cod||'0');
   if(_corSkuCache[key])return _corSkuCache[key];
-  // Hash simples e determinístico
   var h=0;
   for(var x=0;x<key.length;x++){h=((h<<5)-h)+key.charCodeAt(x);h|=0;}
-  // Espalhar matiz em 360º. Multiplica por número primo para reduzir clusters quando codes são sequenciais
   var hue=Math.abs(h*47)%360;
-  // Light: fundo bem suave (pastel, alta luminosidade, baixa saturação)
-  // Dark:  versão saturada da mesma matiz para o separador e a barra lateral
-  var light='hsl('+hue+',62%,93%)';
-  var dark ='hsl('+hue+',45%,38%)';
+  var light='hsl('+hue+',55%,94%)';
+  var dark ='hsl('+hue+',42%,36%)';
   var res={light:light,dark:dark,hue:hue};
   _corSkuCache[key]=res;
   return res;
@@ -557,16 +825,14 @@ function toggleSomaModo(){
   if(!modoSoma){
     modoSoma=true;
     var btn=document.getElementById('sumBtn');
-    if(btn){btn.classList.add('active');btn.innerHTML='&#931; Ver total ('+Object.keys(somaSel).length+')';}
+    if(btn){btn.classList.add('active');btn.innerHTML='Σ Ver total ('+Object.keys(somaSel).length+')';}
     alert('Modo SOMA ativado. Toque nas etiquetas que deseja somar. Quando terminar, toque novamente em "Ver total".');
   } else {
     if(Object.keys(somaSel).length===0){
-      // Sai do modo soma sem mostrar nada
       modoSoma=false;
       somaSel={};
       var btn0=document.getElementById('sumBtn');
-      if(btn0){btn0.classList.remove('active');btn0.innerHTML='&#931; Somar';}
-      // Re-renderizar para remover marcação visual
+      if(btn0){btn0.classList.remove('active');btn0.innerHTML='Σ Somar';}
       render();
       return;
     }
@@ -577,7 +843,7 @@ function toggleSomaModo(){
 function atualizarBtnSoma(){
   var btn=document.getElementById('sumBtn');
   if(btn && modoSoma){
-    btn.innerHTML='&#931; Ver total ('+Object.keys(somaSel).length+')';
+    btn.innerHTML='Σ Ver total ('+Object.keys(somaSel).length+')';
   }
 }
 
@@ -591,7 +857,6 @@ function abrirSomaModal(){
     document.getElementById('sumModal').classList.add('show');
     return;
   }
-  // Agrupar por SKU (_cod) — só faz sentido somar caixas para o mesmo SKU
   var grupos={};
   sel.forEach(function(it){
     var cod=it._cod;
@@ -623,9 +888,9 @@ function abrirSomaModal(){
                  '<div class="sum-total-vl">'+totalGeralUnd+'</div>'+
                  '<div class="sum-total-sub">'+sel.length+(sel.length===1?' etiqueta':' etiquetas')+' &middot; '+chaves.length+(chaves.length===1?' SKU':' SKUs')+'</div>'+
                  '</div>';
-  var footerHtml='<div style="display:flex;gap:8px;margin-top:6px">'+
-                 '<button onclick="limparSelecao()" style="flex:1;padding:11px;background:#FF3B30;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer">Limpar seleção</button>'+
-                 '<button onclick="fecharSomaModal()" style="flex:1;padding:11px;background:#1A3770;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer">Fechar</button>'+
+  var footerHtml='<div style="display:flex;gap:8px;margin-top:8px">'+
+                 '<button onclick="limparSelecao()" style="flex:1;padding:11px;background:var(--red);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer">Limpar seleção</button>'+
+                 '<button onclick="fecharSomaModal()" style="flex:1;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer">Fechar</button>'+
                  '</div>';
   bdy.innerHTML=headerHtml+html+footerHtml;
   document.getElementById('sumModal').classList.add('show');
@@ -640,48 +905,98 @@ function limparSelecao(){
   somaSel={};
   modoSoma=false;
   var btn=document.getElementById('sumBtn');
-  if(btn){btn.classList.remove('active');btn.innerHTML='&#931; Somar';}
+  if(btn){btn.classList.remove('active');btn.innerHTML='Σ Somar';}
   fecharSomaModal();
   render();
 }
 
+// ── RENDER PRINCIPAL ──
 function render(){
   var cont=document.getElementById('cards');
   if(!cont)return;
   var termo=(filtroAtual||'').toLowerCase().trim();
-  var dadosVis=[];
+
+  // Separar validadas (com status) das pendentes
+  var pendentes=[];
+  var validadas=[];
   for(var i=0;i<dados.length;i++){
     var it=dados[i];
+    var est=E[it.k]||{};
+    var matchFiltro=true;
     if(termo){
       var etq=String(it.etiqueta||'').toLowerCase();
       var cod=String(it._cod||'').toLowerCase();
       var nm=String(it.nome||'').toLowerCase();
-      if(etq.indexOf(termo)===-1 && cod.indexOf(termo)===-1 && nm.indexOf(termo)===-1) continue;
+      if(etq.indexOf(termo)===-1 && cod.indexOf(termo)===-1 && nm.indexOf(termo)===-1) matchFiltro=false;
     }
-    dadosVis.push({item:it,idx:i});
+    if(est.status){
+      // Item validado — só aparece na aba, não nas cards (a menos que tenha filtro ativo buscando por ele)
+      validadas.push({item:it,idx:i,est:est});
+    } else {
+      if(matchFiltro) pendentes.push({item:it,idx:i,est:est});
+    }
   }
-  if(dadosVis.length===0){
+
+  // ── Renderizar painel de validadas ──
+  var panel=document.getElementById('validatedPanel');
+  var inner=document.getElementById('validatedInner');
+  var countEl=document.getElementById('validatedCount');
+  if(validadas.length>0){
+    if(panel) panel.style.display='block';
+    if(countEl) countEl.textContent=validadas.length;
+    if(inner){
+      var vh='';
+      var stLabels={pres:'PRESENTE',ause:'AUSENTE',corr:'CORRIGIDA'};
+      validadas.forEach(function(reg){
+        var it=reg.item;
+        var est=reg.est;
+        var stLb=stLabels[est.status]||est.status;
+        var stCls=est.status||'';
+        var hasL=it.etiqueta&&it.etiqueta!=='-';
+        vh+='<div class="mini-card">'+
+            (hasL?'<span class="mini-etq">'+it.etiqueta+'</span>':'<span class="mini-etq" style="color:var(--text2)">'+it.etiqueta+'</span>')+
+            '<span class="mini-nome">'+it.nome+'</span>'+
+            '<span class="mini-st '+stCls+'">'+stLb+'</span>'+
+            '<button class="mini-undo" onclick="desfazerValidacao(\''+it.k+'\')" title="Desfazer validação">↩</button>'+
+            '</div>';
+      });
+      inner.innerHTML=vh;
+    }
+  } else {
+    if(panel) panel.style.display='none';
+  }
+
+  // ── Renderizar cards pendentes ──
+  if(pendentes.length===0){
     if(dados.length===0){
       cont.innerHTML='<div class="no-res" style="padding:60px 24px">'+
-        '<div style="font-size:42px;margin-bottom:14px">📦</div>'+
-        '<div style="font-size:15px;font-weight:800;color:#1C1C1E;margin-bottom:6px">Nenhuma quebra na nuvem</div>'+
-        '<div style="font-size:12px;color:#8E8E93;line-height:1.55;max-width:280px;margin:0 auto">A planilha de hoje ainda não foi importada pelo responsável, ou hoje não existem quebras.</div>'+
-        '<button onclick="location.reload()" style="margin-top:18px;background:#1A3770;color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:12px;font-weight:800;cursor:pointer">Tentar novamente</button>'+
+        '<div style="font-size:40px;margin-bottom:14px">📦</div>'+
+        '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:6px">Nenhuma quebra na nuvem</div>'+
+        '<div style="font-size:12px;color:var(--text2);line-height:1.55;max-width:280px;margin:0 auto">A planilha de hoje ainda não foi importada pelo responsável, ou não existem quebras hoje.</div>'+
+        '<button onclick="location.reload()" style="margin-top:18px;background:var(--blue);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:12px;font-weight:800;cursor:pointer">Tentar novamente</button>'+
       '</div>';
-    } else {
+    } else if(termo) {
       cont.innerHTML='<div class="no-res">Nenhum resultado para "<strong>'+(termo||'')+'</strong>"</div>';
+    } else {
+      cont.innerHTML='<div class="no-res" style="padding:48px 24px">'+
+        '<div style="font-size:38px;margin-bottom:12px">🎉</div>'+
+        '<div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px">Tudo validado!</div>'+
+        '<div style="font-size:12px;color:var(--text2)">Todas as etiquetas foram conferidas.</div>'+
+      '</div>';
     }
     prog();
     return;
   }
+
   var h='';
   var lastCod=null;
   var codCount={};
-  for(var k=0;k<dadosVis.length;k++){var c=dadosVis[k].item._cod;codCount[c]=(codCount[c]||0)+1;}
-  for(var j=0;j<dadosVis.length;j++){
-    var item=dadosVis[j].item;
-    var i=dadosVis[j].idx;
-    var est=E[item.k]||{},s=sc(item.data);
+  for(var k=0;k<pendentes.length;k++){var c=pendentes[k].item._cod;codCount[c]=(codCount[c]||0)+1;}
+  for(var j=0;j<pendentes.length;j++){
+    var item=pendentes[j].item;
+    var i=pendentes[j].idx;
+    var est=pendentes[j].est;
+    var s=sc(item.data);
     var skuColor=corDoSku(item._cod);
     if(item._cod!==lastCod){
       lastCod=item._cod;
@@ -694,40 +1009,32 @@ function render(){
     var hasL=item.etiqueta&&item.etiqueta!=='-';
     var ifu='https://inflow.tec.br/view_etiqueta?e='+encodeURIComponent(item.etiqueta);
     var ov=(est.obs||'').replace(/"/g,'&quot;');
-    var p0=est.status==='pres'?' on':'',p1=est.status==='ause'?' on':'',p2=est.status==='corr'?' on':'';
-    var od=est.status==='corr'?'block':'none';
+    // Nunca haverá status aqui (já foi separado), mas mantemos os botões como referência
+    var p0='',p1='',p2='';
+    var od='none';
     var selCls=somaSel[i]?' selecionado':'';
-    // "Modificado por X" — visível inline após os botões de ação
     var byHtml='';
-    if(est.status && est.by){
-      if(est.by===ME){
-        byHtml='<div class="by-info by-eu">'+
-               '<svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>'+
-               'marcado por <b>você</b></div>';
-      } else {
-        byHtml='<div class="by-info by-outros">'+
-               '<svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>'+
-               'marcado por <b>'+est.by+'</b></div>';
-      }
+    // Se tem obs mas sem status (raro), mantém
+    if(est.by && !est.status){
+      byHtml='<div class="by-info by-eu"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> editado por <b>'+est.by+'</b></div>';
     }
-    // Cor de fundo do card por SKU (mas mantém amarelo se for FANTASMA)
     var cardStyle=item.obs?'':' style="background:'+skuColor.light+';border-left:4px solid '+skuColor.dark+'"';
     h+='<div class="card'+(item.obs?' fant':'')+selCls+'"'+cardStyle+' data-cidx="'+i+'">'+
        '<div class="chdr">'+
-       '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">'+
+       '<div class="chdr-left">'+
        (hasL?'<a class="etq-a" href="'+ifu+'" target="_blank">'+item.etiqueta+'</a>':'<span class="etq-s">'+item.etiqueta+'</span>')+
        (item.obs?'<span class="ftag">⚠ FANTASMA?</span>':'')+
        '</div>'+
-       '<div style="display:flex;align-items:center;gap:7px">'+
+       '<div class="chdr-right">'+
        '<span class="card-sel-mark">✓</span>'+
        '<span class="bdg" style="background:'+s.bg+';color:'+s.tx+'">'+s.lb+'</span>'+
        '</div>'+
        '</div>'+
        '<div class="cbdy">'+
        '<div class="nome">'+item.nome+'</div>'+
-       '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px">'+
-       '<div style="font-size:10px;color:#8E8E93">'+item.data+'</div>'+
-       '<div style="display:flex;gap:14px">'+
+       '<div class="meta-row">'+
+       '<div class="meta-date">'+item.data+'</div>'+
+       '<div class="meta-nums">'+
        '<div><div class="qlbl">CX</div><div class="qval">'+item.cx+'</div></div>'+
        '<div><div class="qlbl">UNDS</div><div class="qval">'+item.unds+'</div></div>'+
        '<div><div class="qlbl">TOTAL</div><div class="qval">'+item.total+'</div></div>'+
@@ -747,7 +1054,7 @@ function render(){
   prog();
 }
 
-// Listeners delegados (instalados uma só vez)
+// ── Event listeners delegados ──
 function initListeners(){
   var cont=document.getElementById('cards');
   if(cont){
@@ -790,6 +1097,9 @@ if(document.readyState==='loading'){
   initListeners();
 }
 
+// ═══════════════════════════════════════════════════════════════
+// PDF
+// ═══════════════════════════════════════════════════════════════
 function gerarPDF(){
   if(!window.jspdf){alert('Aguarde o carregamento do PDF.');return;}
   var jsPDF=window.jspdf.jsPDF;
@@ -801,7 +1111,6 @@ function gerarPDF(){
   for(var k in E){if(!E[k])continue;if(E[k].status==='pres')np++;else if(E[k].status==='ause')na++;else if(E[k].status==='corr')nc++;}
   var nn=dados.length-np-na-nc;
 
-  // FILTRO: gera PDF APENAS com etiquetas AUSENTES e CORRIGIDAS (com observação)
   var dadosFiltrados=[];
   for(var idx=0; idx<dados.length; idx++){
     var estF=E[dados[idx].k]||{};
@@ -841,7 +1150,6 @@ function gerarPDF(){
   });
 
   var y=kpiY+kpiH+6;
-  // Coluna ETIQUETA agora inclui o status como badge ao lado. Coluna STATUS separada removida.
   var cols=[
     {h:'ETIQUETA / STATUS',w:46,a:'left'},{h:'PRODUTO',w:68,a:'left'},
     {h:'VENCIMENTO',w:26,a:'center'},{h:'CX',w:12,a:'center'},
@@ -869,7 +1177,6 @@ function gerarPDF(){
   var stMap={'pres':{lb:'PRESENTE',c:[52,199,89]},'ause':{lb:'AUSENTE',c:[255,59,48]},'corr':{lb:'CORRIGIDA',c:[255,149,0]}};
   dadosFiltrados.forEach(function(reg,rowIdx){
     var item=reg.item;
-    var i=reg.idx;
     var est=reg.est;
     if(y+8>maxY){drawFoot2();doc.addPage();pageNum++;y=14;}
     var alt=rowIdx%2===0;
@@ -877,14 +1184,11 @@ function gerarPDF(){
     doc.setFillColor(rfill[0],rfill[1],rfill[2]);doc.rect(xC,y,pgW-18,8,'F');
 
     var stInfo=est.status&&stMap[est.status]?stMap[est.status]:{lb:'—',c:[200,200,200]};
-    // Barra colorida vertical mais grossa à esquerda (reforço visual do status)
     doc.setFillColor(stInfo.c[0],stInfo.c[1],stInfo.c[2]);doc.rect(xC,y,2.5,8,'F');
 
     var cx3=xC+3;
-    // ETIQUETA + BADGE STATUS lado a lado (largura total da coluna: 46mm)
     doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(26,55,112);
     doc.text(item.etiqueta,cx3+1,y+5);
-    // Badge de status logo após a etiqueta
     var stBadgeX=cx3+19;
     doc.setFillColor(stInfo.c[0],stInfo.c[1],stInfo.c[2]);doc.roundedRect(stBadgeX,y+1.6,22,4.8,1.2,1.2,'F');
     doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(255,255,255);
@@ -936,18 +1240,10 @@ function gerarPDF(){
   doc.save('Quebras_Ausentes_Correcoes_'+dt+'.pdf');
 }
 
-// ─── iniciarConferencia ──────────────────────────────────────────
-// Chamada após o usuário ser identificado. Tenta buscar dados da nuvem;
-// se houver dados, mostra o app direto. Se não houver (cesta vazia ou
-// sem planilha importada), mostra o app com mensagem de "nenhuma quebra".
-// Se o usuário for Admin (Cosme), mostra também o botão de importar.
-// ─── BOOT ───────────────────────────────────────────────────────
-// Sempre começa pedindo quem é o usuário. Se já houver nome salvo de antes,
-// re-aplica a permissão automaticamente (sem precisar escolher de novo).
+// ═══════════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════════
 (function bootInicial(){
-  // Abre o app imediatamente — sem spinner, sem esperar rede
-  var sp = document.getElementById('splash');
-  if(sp) sp.style.display = 'none';
   var ap = document.getElementById('app');
   if(ap) ap.style.display = 'block';
 
@@ -960,27 +1256,24 @@ function gerarPDF(){
     isAdmin = adminSalvo;
     ME = nomeSalvo;
     var bn = document.getElementById('btnNome');
-    if(bn) bn.textContent = (isAdmin ? '👑 ' : '👤 ') + ME;
+    if(bn) bn.textContent = (isAdmin ? '👑' : '👤') + ' ' + ME;
     var bi = document.getElementById('btnImport');
-    if(bi) bi.style.display = isAdmin ? 'inline-block' : 'none';
+    if(bi) bi.style.display = isAdmin ? 'inline-flex' : 'none';
     render(); prog();
-    // Sync em background após 500ms
     setTimeout(function(){
       try{ iniciarSync(); }catch(e){}
       setSyncStatus(navigator.onLine ? 'idle' : 'offline');
       _iniciarPollDados();
     }, 500);
   } else {
-    // Sem nome: mostra modal por cima do app vazio
     render(); prog();
     var m = document.getElementById('nomeModal');
     if(m) m.style.display = 'flex';
   }
 })();
 
-
 // ═══════════════════════════════════════════════════════════════
-// IMPORTAÇÃO DE PLANILHA (standalone) — replica lógica do dashboard
+// IMPORTAÇÃO DE PLANILHA
 // ═══════════════════════════════════════════════════════════════
 var lastroSkuDB = {
   "669":228,"162272":228,"162775":228,"85841":190,"162800":228,
@@ -1005,7 +1298,6 @@ function _gLastro(cod,name){var s=String(cod).trim();if(lastroSkuDB[s])return la
 function processarArquivo(file){
   if(!file)return;
   if(typeof XLSX==='undefined'){alert('Biblioteca de planilha ainda carregando. Aguarde e tente de novo.');return;}
-  // splash já está oculto, nada a fazer aqui
   var reader=new FileReader();
   reader.onload=function(evt){
     try{
@@ -1029,7 +1321,7 @@ function montarQuebras(rows,fileName){
     var etiqueta=String(_gField(n,['ETIQUETA'])).trim();
     if(!produto||!validade||!qtd)return;
     var lastro=_gLastro(cod,produto);
-    if(qtd>=lastro)return; // só quebras
+    if(qtd>=lastro)return;
     var diff=Math.ceil((validade-today)/86400000);
     listaQ.push({cod:cod,produto:produto,qtd:qtd,validade:validade,lastro:lastro,etiqueta:etiqueta,diff:diff});
   });
@@ -1037,7 +1329,6 @@ function montarQuebras(rows,fileName){
 
   var minDiff=Math.min.apply(null,listaQ.map(function(i){return i.diff;}));
   var _ordem=[81571,81591,162396,16,81581,11,145521,145511,655,1224,6,69251,82051,2,81661,85841,162800,162767,85181,162802,135231,135221,135211,162275,135241,162276,162923,162920,162921,162922,121801,121581,121811,121831,121821,121861,121871,162358,121841,162783,162784,669,162775,162272,141951,141441];
-  // Monta os "dados" no MESMO formato do popup (com key estável k)
   dados=listaQ.map(function(i){
     var div=i.produto.toUpperCase().indexOf('HAMBURGUER')>=0?17:19;
     var upCx=i.lastro/div;
@@ -1061,7 +1352,6 @@ function montarQuebras(rows,fileName){
     return a._val-b._val;
   });
 
-  // App já está visível — só renderiza e envia para o Firebase
   render();
   setSyncStatus(navigator.onLine?'idle':'offline');
   pushDados();
@@ -1072,7 +1362,6 @@ function reimportar(){
   var fi=document.getElementById('fileInputGlobal');
   if(fi){fi.value='';fi.click();}
 }
-
 </script>
 </body>
 </html>
