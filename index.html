@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Conferência de Quebras</title>
-<meta name="theme-color" content="#1A3770">
+<meta name="theme-color" content="#F8F9FC">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A3770'/%3E%3Cpath d='M12 22l4-6h32l4 6H12z' fill='%23ffffff' opacity='.3'/%3E%3Crect x='10' y='22' width='44' height='30' rx='3' fill='%23ffffff' opacity='.15'/%3E%3Crect x='10' y='22' width='44' height='30' rx='3' fill='none' stroke='%23ffffff' stroke-width='2.5'/%3E%3Cpath d='M12 22l4-6h32l4 6' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linejoin='round'/%3E%3Cpath d='M24 22v4a8 8 0 0016 0v-4' fill='none' stroke='%2334C759' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A3770'/%3E%3Cpath d='M12 22l4-6h32l4 6H12z' fill='%23ffffff' opacity='.3'/%3E%3Crect x='10' y='22' width='44' height='30' rx='3' fill='%23ffffff' opacity='.15'/%3E%3Crect x='10' y='22' width='44' height='30' rx='3' fill='none' stroke='%23ffffff' stroke-width='2.5'/%3E%3Cpath d='M12 22l4-6h32l4 6' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linejoin='round'/%3E%3Cpath d='M24 22v4a8 8 0 0016 0v-4' fill='none' stroke='%2334C759' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <meta name="mobile-web-app-capable" content="yes">
@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="Quebras">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
 /* ── Reset & Base ── */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -39,20 +40,21 @@
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);padding-bottom:80px;color:var(--text)}
 
-/* ── Header Fluent ── */
+/* ── Header iOS glassmorphism ── */
 .hdr{
   position:sticky;top:0;z-index:100;
-  background:rgba(26,55,112,0.96);
-  backdrop-filter:saturate(180%) blur(20px);
-  -webkit-backdrop-filter:saturate(180%) blur(20px);
-  color:#fff;
+  background:rgba(248,249,252,0.72);
+  backdrop-filter:saturate(180%) blur(24px);
+  -webkit-backdrop-filter:saturate(180%) blur(24px);
+  color:var(--text);
   padding:0 14px;
   height:52px;
   display:flex;align-items:center;gap:8px;
-  box-shadow:0 1px 0 rgba(255,255,255,0.1),0 2px 12px rgba(0,0,0,.25);
+  border-bottom:0.5px solid rgba(0,0,0,.10);
+  box-shadow:0 0.5px 0 rgba(255,255,255,.6) inset,0 1px 12px rgba(0,0,0,.06);
 }
-.hdr-title{font-size:14px;font-weight:800;letter-spacing:.03em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hdr-count{font-size:10px;opacity:.7;white-space:nowrap;flex-shrink:0}
+.hdr-title{font-size:14px;font-weight:800;letter-spacing:.01em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.hdr-count{font-size:10px;color:var(--text2);opacity:.85;white-space:nowrap;flex-shrink:0}
 .hdr-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
 
 /* Botões do header — compactos para mobile */
@@ -67,15 +69,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .hdr-btn:active{transform:scale(.93);opacity:.85}
 .hdr-btn-icon{width:32px;padding:0}
 .hdr-btn-pdf{background:var(--green);color:#fff}
-.hdr-btn-import{background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,.2)}
-.hdr-btn-user{background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,.15)}
+.hdr-btn-import{background:rgba(0,0,0,0.05);color:var(--text);border:0.5px solid rgba(0,0,0,.12)}
+.hdr-btn-user{background:rgba(0,0,0,0.05);color:var(--text);border:0.5px solid rgba(0,0,0,.12)}
 
 /* ── Sync dot ── */
 .sync-dot{
   width:8px;height:8px;border-radius:50%;
   background:#8E8E93;flex-shrink:0;cursor:pointer;
   transition:background .3s;
-  box-shadow:0 0 0 2px rgba(255,255,255,.3);
+  box-shadow:0 0 0 2px rgba(0,0,0,.08);
 }
 .sync-dot:active{transform:scale(.8)}
 
@@ -145,11 +147,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   box-shadow:0 2px 6px rgba(52,199,89,.35);
 }
 .validated-toggle-label{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.validated-toggle-icon.absent{
+  background:linear-gradient(135deg,var(--red),#FF6961);
+  box-shadow:0 2px 6px rgba(255,59,48,.35);
+}
 .validated-toggle-count{
   font-size:11px;font-weight:700;
   background:var(--green);color:#fff;
   padding:2px 9px;border-radius:20px;
 }
+.validated-toggle-count.absent{background:var(--red)}
 .validated-toggle-arrow{
   font-size:10px;color:var(--text3);
   transition:transform .25s cubic-bezier(.4,0,.2,1);
@@ -170,8 +177,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   background:var(--surface2);border-radius:10px;
   border:1px solid var(--border);
 }
-.mini-etq{font-size:12px;font-weight:800;color:var(--blue);background:#EEF2FF;padding:3px 8px;border-radius:6px}
-.mini-nome{font-size:11px;color:var(--text2);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mini-etq{font-size:12px;font-weight:800;color:var(--blue);background:#EEF2FF;padding:3px 8px;border-radius:6px;text-decoration:none;display:inline-block;transition:background .12s,transform .1s;flex-shrink:0}
+a.mini-etq{cursor:pointer}
+a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
+.mini-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.mini-nome{font-size:11px;color:var(--text2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mini-by{font-size:9.5px;color:var(--text3);font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mini-by b{font-weight:800;color:var(--text2)}
 .mini-st{font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap;text-transform:uppercase}
 .mini-st.pres{background:#E8FBF0;color:#1A7A3A}
 .mini-st.ause{background:#FFEBEA;color:#C0251C}
@@ -198,6 +210,165 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 }
 .card.fant{border-left:4px solid var(--orange);background:#FFFCF5}
 .card.selecionado{box-shadow:0 0 0 2.5px var(--accent),var(--shadow-sm)}
+
+/* ── Animação iOS: card encolhe enquanto sobe para a aba ── */
+.fly-clone{
+  position:fixed;z-index:9999;
+  pointer-events:none;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-lg);
+  overflow:hidden;
+  transform-origin:center center;
+  will-change:transform,opacity;
+  transition:transform .62s cubic-bezier(.32,.72,.28,1),
+             opacity .62s cubic-bezier(.55,0,.85,.35),
+             border-radius .62s ease;
+}
+/* sobe encolhendo; mantém-se nítido na subida e some só no fim */
+.fly-clone.go{opacity:0;border-radius:var(--radius)}
+/* o card original some no lugar com colapso suave de altura */
+.card.flying-out{
+  transition:transform .3s cubic-bezier(.34,.9,.32,1),opacity .24s ease,
+             max-height .44s cubic-bezier(.4,0,.2,1),margin .44s ease,
+             padding .44s ease;
+  transform:scale(.94);opacity:0;overflow:hidden;
+  max-height:400px;
+}
+.card.flying-out.collapse{max-height:0;margin-top:0;margin-bottom:0;padding-top:0;padding-bottom:0;border-width:0}
+/* pulso de destaque no painel de validadas quando chega */
+@keyframes validBump{
+  0%{transform:scale(1)}
+  35%{transform:scale(1.06)}
+  100%{transform:scale(1)}
+}
+.validated-panel.bump{animation:validBump .45s cubic-bezier(.34,1.4,.5,1)}
+.validated-toggle-icon.pop{animation:validBump .5s cubic-bezier(.34,1.6,.5,1)}
+/* entrada suave do mini-card recém validado */
+@keyframes miniIn{
+  0%{opacity:0;transform:translateY(-8px) scale(.96)}
+  100%{opacity:1;transform:none}
+}
+.mini-card.just-in{animation:miniIn .42s cubic-bezier(.2,.7,.3,1)}
+@media(prefers-reduced-motion:reduce){
+  .fly-clone,.card.flying-out,.mini-card.just-in,
+  .validated-panel.bump,.validated-toggle-icon.pop{transition:none!important;animation:none!important}
+}
+
+/* ── Modal de etiqueta (iframe full-screen) ── */
+.etq-modal-bg{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,.55);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:none;align-items:stretch;justify-content:center;
+  opacity:0;transition:opacity .22s ease;
+}
+.etq-modal-bg.show{display:flex;opacity:1}
+.etq-modal{
+  width:100%;max-width:760px;height:100%;
+  background:var(--surface);
+  display:flex;flex-direction:column;
+  transform:translateY(14px) scale(.985);
+  transition:transform .26s cubic-bezier(.2,.7,.3,1);
+}
+.etq-modal-bg.show .etq-modal{transform:none}
+.etq-modal-hdr{
+  flex-shrink:0;display:flex;align-items:center;gap:8px;
+  height:52px;padding:0 12px;
+  background:rgba(248,249,252,0.85);
+  backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:0.5px solid rgba(0,0,0,.1);
+}
+.etq-modal-tag{
+  font-size:13px;font-weight:800;color:var(--blue);
+  background:#EEF2FF;padding:5px 11px;border-radius:7px;
+  max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.etq-modal-spacer{flex:1}
+.etq-modal-ext{
+  font-size:11px;font-weight:700;color:var(--text);text-decoration:none;
+  background:rgba(0,0,0,.05);border:0.5px solid rgba(0,0,0,.12);
+  padding:7px 11px;border-radius:8px;white-space:nowrap;transition:opacity .12s;
+}
+.etq-modal-ext:active{opacity:.6}
+.etq-modal-close{
+  width:34px;height:34px;flex-shrink:0;
+  background:rgba(0,0,0,.05);border:0.5px solid rgba(0,0,0,.12);
+  border-radius:50%;font-size:20px;line-height:1;color:var(--text2);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.etq-modal-close:active{transform:scale(.9);background:rgba(0,0,0,.1)}
+.etq-modal-body{flex:1;position:relative;background:#fff;overflow:hidden}
+.etq-frame{width:100%;height:100%;border:none;display:block;background:#fff}
+.etq-loader,.etq-blocked{
+  position:absolute;inset:0;z-index:2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:24px;background:#fff;
+}
+.etq-spinner{
+  width:34px;height:34px;border-radius:50%;
+  border:3px solid var(--border);border-top-color:var(--blue);
+  animation:etqSpin .8s linear infinite;margin-bottom:14px;
+}
+@keyframes etqSpin{to{transform:rotate(360deg)}}
+.etq-loader-txt{font-size:12px;font-weight:700;color:var(--text2)}
+.etq-blocked-btn{
+  background:var(--blue);color:#fff;text-decoration:none;
+  border-radius:10px;padding:11px 22px;font-size:13px;font-weight:800;
+}
+.etq-blocked-btn:active{opacity:.85}
+
+/* ── Toast: etiqueta aberta na guia única ── */
+.etq-toast{
+  position:fixed;left:50%;bottom:24px;z-index:2000;
+  transform:translateX(-50%) translateY(20px);
+  display:flex;align-items:center;gap:9px;
+  max-width:90vw;
+  background:rgba(28,28,30,0.92);
+  backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  color:#fff;font-size:12.5px;font-weight:600;
+  padding:12px 16px;border-radius:14px;
+  box-shadow:0 10px 40px rgba(0,0,0,.35);
+  opacity:0;pointer-events:none;
+  transition:opacity .25s ease,transform .3s cubic-bezier(.2,.8,.3,1);
+}
+.etq-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.etq-toast b{font-weight:800}
+.etq-toast-ico{
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  width:22px;height:22px;border-radius:50%;
+  background:var(--green);color:#fff;font-size:13px;font-weight:900;
+}
+@media(prefers-reduced-motion:reduce){.etq-toast{transition:opacity .15s}}
+
+/* ── Notificações de validação (canto superior) ── */
+.notif-wrap{
+  position:fixed;top:60px;left:50%;transform:translateX(-50%);
+  z-index:2001;display:flex;flex-direction:column;gap:8px;
+  width:calc(100% - 24px);max-width:420px;pointer-events:none;
+}
+.notif-card{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,0.82);
+  backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  border:0.5px solid rgba(0,0,0,.1);
+  border-radius:14px;padding:11px 14px;
+  box-shadow:0 8px 28px rgba(0,0,0,.16);
+  font-size:12.5px;line-height:1.4;color:var(--text);
+  opacity:0;transform:translateY(-12px) scale(.97);
+  transition:opacity .3s ease,transform .35s cubic-bezier(.2,.8,.3,1);
+}
+.notif-card.show{opacity:1;transform:none}
+.notif-txt{flex:1}
+.notif-txt b{font-weight:800;color:var(--blue)}
+.notif-ico{
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  width:24px;height:24px;border-radius:50%;
+  background:linear-gradient(135deg,var(--green),#2EE87A);
+  color:#fff;font-size:13px;font-weight:900;
+  box-shadow:0 2px 6px rgba(52,199,89,.35);
+}
+@media(prefers-reduced-motion:reduce){.notif-card{transition:opacity .15s}}
 
 /* Card header */
 .chdr{
@@ -361,6 +532,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <span id="syncDot" class="sync-dot" title="Sincronizado" onclick="forcarSync()"></span>
       <button class="hdr-btn hdr-btn-pdf" onclick="gerarPDF()" title="Gerar PDF">📄 PDF</button>
       <button id="btnImport" class="hdr-btn hdr-btn-import" onclick="reimportar()" title="Importar planilha" style="display:none">📂</button>
+      <button id="btnQR" onclick="abrirScanner()" class="hdr-btn hdr-btn-user" title="Ler QR da etiqueta"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h.01M21 21v.01M17.5 21H21v-3.5"/></svg></button>
       <button id="btnNome" onclick="mudarNome()" class="hdr-btn hdr-btn-user">👤</button>
     </div>
   </div>
@@ -390,12 +562,67 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
   </div>
 
+  <!-- ABSENT PANEL (accordion) -->
+  <div id="absentPanel" class="validated-panel" style="display:none">
+    <button class="validated-toggle" onclick="toggleAbsent()">
+      <div class="validated-toggle-icon absent">✗</div>
+      <span class="validated-toggle-label">Ausentes</span>
+      <span id="absentCount" class="validated-toggle-count absent">0</span>
+      <span id="absentArrow" class="validated-toggle-arrow">▼</span>
+    </button>
+    <div id="absentBody" class="validated-body">
+      <div id="absentInner" class="validated-inner"></div>
+    </div>
+  </div>
+
   <!-- MAIN CARDS -->
   <div class="cards" id="cards"></div>
 </div>
 
 <!-- FILE INPUT -->
 <input type="file" id="fileInputGlobal" accept=".xlsx,.xls,.csv" style="display:none" onchange="processarArquivo(this.files[0])"/>
+
+<!-- MODAL: Etiqueta (iframe) -->
+<div id="etqModal" class="etq-modal-bg">
+  <div class="etq-modal">
+    <div class="etq-modal-hdr">
+      <span class="etq-modal-tag" id="etqModalTag">Etiqueta</span>
+      <span class="etq-modal-spacer"></span>
+      <button class="etq-modal-close" onclick="fecharEtq()" title="Fechar">×</button>
+    </div>
+    <div class="etq-modal-body">
+      <a id="etqModalOpen" href="#" target="inflow_etq" style="display:none"></a>
+      <div id="etqLoader" class="etq-loader" style="display:none"></div>
+      <iframe id="etqFrame" style="display:none"></iframe>
+      <div id="etqBlocked" class="etq-blocked" style="display:none">
+        <div style="font-size:38px;margin-bottom:12px">↗</div>
+        <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:6px">Permita abrir a etiqueta</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.55;max-width:300px;margin:0 auto 16px">Seu navegador bloqueou a abertura automática. Toque no botão para ver a etiqueta na guia do inFlow.</div>
+        <a id="etqBlockedOpen" class="etq-blocked-btn" href="#" target="inflow_etq" onclick="fecharEtq()">↗ Abrir etiqueta</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Scanner QR -->
+<div id="qrModal" class="etq-modal-bg">
+  <div class="etq-modal">
+    <div class="etq-modal-hdr">
+      <span class="etq-modal-tag">📷 Ler QR da etiqueta</span>
+      <span class="etq-modal-spacer"></span>
+      <button class="etq-modal-close" onclick="fecharScanner()" title="Fechar">×</button>
+    </div>
+    <div class="etq-modal-body" style="background:#000">
+      <div id="qrReader" style="width:100%;height:100%"></div>
+      <div id="qrErr" class="etq-blocked" style="display:none;background:#fff">
+        <div style="font-size:38px;margin-bottom:12px">📷</div>
+        <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:6px">Câmera indisponível</div>
+        <div id="qrErrMsg" style="font-size:12px;color:var(--text2);line-height:1.55;max-width:300px;margin:0 auto"></div>
+      </div>
+      <div id="qrHint" style="position:absolute;left:0;right:0;bottom:20px;z-index:3;text-align:center;color:#fff;font-size:12px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6);pointer-events:none">Aponte para o QR Code da etiqueta</div>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL: Soma/Totalizador -->
 <div id="sumModal" class="modal-bg" onclick="if(event.target===this)fecharSomaModal()">
@@ -441,6 +668,7 @@ var dados = [];
 var ME = '';
 var isAdmin = false;
 var _validatedOpen = false;
+var _absentOpen = false;
 
 // ── Validated panel toggle ──
 function toggleValidated(){
@@ -449,6 +677,13 @@ function toggleValidated(){
   var arrow = document.getElementById('validatedArrow');
   if(body) body.classList.toggle('open', _validatedOpen);
   if(arrow) arrow.classList.toggle('open', _validatedOpen);
+}
+function toggleAbsent(){
+  _absentOpen = !_absentOpen;
+  var body = document.getElementById('absentBody');
+  var arrow = document.getElementById('absentArrow');
+  if(body) body.classList.toggle('open', _absentOpen);
+  if(arrow) arrow.classList.toggle('open', _absentOpen);
 }
 
 // ── Gerenciamento de usuário ──
@@ -550,6 +785,7 @@ function _fbConfURL(){  return FB_URL + '/conf_'  + _dataKey() + '.json'; }
 var pushTimer = null;
 var pullTimer = null;
 var _syncBusy = false;
+var _jaSincronizou = false; // evita notificar tudo na primeira carga
 var ultimaMudancaRemota = {};
 
 function cloudPush(){
@@ -608,11 +844,17 @@ function cloudPull(){
           var rem = remoto[k], loc = E[k];
           if(!rem || typeof rem !== 'object') continue;
           if((rem.ts||0) > ((loc&&loc.ts)||0)){
+            // detecta validação nova feita por outra pessoa → notifica
+            var statusAntes = (loc&&loc.status)||'';
+            if(_jaSincronizou && rem.status && rem.status!==statusAntes && rem.by && rem.by!==ME){
+              notificarValidacaoRemota(k, rem);
+            }
             E[k] = rem; ultimaMudancaRemota[k] = Date.now(); mudou = true;
           }
         }
         if(mudou){ try{ localStorage.setItem(SK, JSON.stringify(E)); }catch(e){} render(); prog(); }
       }
+      _jaSincronizou = true;
       clearTimeout(guard); _syncBusy = false; setSyncStatus('idle');
     })
     .catch(function(){ clearTimeout(guard); _syncBusy = false; setSyncStatus('error'); });
@@ -764,8 +1006,81 @@ function setSt(i,st){
   }
 
   salvar(key,'status',st);
-  // Marca como validada → re-render move o card para a aba
-  render();
+  // Marca como validada → anima o card voando para a aba e re-renderiza
+  var cardEl=document.querySelector('.card[data-cidx="'+i+'"]');
+  ultimaValidada=key;
+  if(cardEl && !stAtual){
+    animarValidacao(cardEl, render, st);
+  } else {
+    render();
+  }
+}
+
+// Chave da última quebra validada (para destacar o mini-card de entrada)
+var ultimaValidada=null;
+
+// ── Animação iOS: card "voa" e encolhe em direção ao painel de validadas ──
+function animarValidacao(cardEl, onDone, st){
+  try{
+    // escolhe o painel de destino conforme o status
+    var ehAusente=(st==='ause');
+    var panel=document.getElementById(ehAusente?'absentPanel':'validatedPanel');
+    var alvo=panel?panel.querySelector('.validated-toggle-icon'):document.querySelector('.validated-toggle-icon');
+    // se o painel-alvo está oculto (primeiro item da categoria), não há posição válida
+    var alvoVisivel=alvo && alvo.getBoundingClientRect().width>0;
+    var r=cardEl.getBoundingClientRect();
+
+    // clone visual posicionado exatamente sobre o card
+    var clone=cardEl.cloneNode(true);
+    clone.className='fly-clone';
+    clone.style.left=r.left+'px';
+    clone.style.top=r.top+'px';
+    clone.style.width=r.width+'px';
+    clone.style.height=r.height+'px';
+    clone.style.transform='translate(0,0) scale(1)';
+    clone.style.opacity='1';
+    document.body.appendChild(clone);
+
+    // colapsa o card original no fluxo
+    cardEl.classList.add('flying-out');
+    requestAnimationFrame(function(){cardEl.classList.add('collapse');});
+
+    // calcula destino (centro do ícone da aba, ou topo se oculto)
+    requestAnimationFrame(function(){
+      var dx,dy;
+      if(alvoVisivel){
+        var t=alvo.getBoundingClientRect();
+        dx=(t.left+t.width/2)-(r.left+r.width/2);
+        dy=(t.top+t.height/2)-(r.top+r.height/2);
+      } else {
+        dx=(window.innerWidth/2)-(r.left+r.width/2);
+        dy=70-(r.top+r.height/2);
+      }
+      clone.style.transform='translate('+dx+'px,'+dy+'px) scale(.12)';
+      clone.classList.add('go');
+    });
+
+    var feito=false;
+    function finalizar(){
+      if(feito)return;feito=true;
+      if(clone.parentNode)clone.parentNode.removeChild(clone);
+      // pulso de chegada — busca o painel já renderizado (pode ter acabado de aparecer)
+      var panelFinal=document.getElementById(ehAusente?'absentPanel':'validatedPanel');
+      if(panelFinal && panelFinal.style.display!=='none'){
+        panelFinal.classList.add('bump');
+        setTimeout(function(){panelFinal.classList.remove('bump');},480);
+        var ic=panelFinal.querySelector('.validated-toggle-icon');
+        if(ic){ic.classList.add('pop');setTimeout(function(){ic.classList.remove('pop');},520);}
+      }
+      if(onDone)onDone();
+    }
+    clone.addEventListener('transitionend',function(ev){
+      if(ev.propertyName==='transform')finalizar();
+    });
+    setTimeout(finalizar,640); // fallback
+  }catch(e){
+    if(onDone)onDone();
+  }
 }
 
 // Desfaz validação de um item (chamado pelo botão ↩ na aba validadas)
@@ -780,6 +1095,202 @@ function desfazerValidacao(key){
     render();
   }
 }
+
+// ── Abertura de etiqueta em GUIA ÚNICA reutilizada ──
+// O inFlow bloqueia iframe (X-Frame-Options), então abrimos em aba externa.
+// Usamos sempre a MESMA janela nomeada: cada etiqueta substitui a anterior,
+// evitando o acúmulo de guias.
+var _etqWin=null;
+function abrirEtq(ev,el){
+  if(ev)ev.preventDefault();
+  abrirEtqURL(el.getAttribute('data-etqurl'), el.getAttribute('data-etqtag')||'Etiqueta');
+}
+function abrirEtqURL(url,tag){
+  if(!url)return;
+  try{
+    // 'inflow_etq' = nome fixo da janela. Reabrir com o mesmo nome reaproveita a guia.
+    _etqWin=window.open(url,'inflow_etq');
+    if(_etqWin){
+      try{_etqWin.focus();}catch(e){}
+      flashEtqAberta(tag);
+    } else {
+      // popup bloqueado pelo navegador
+      mostrarPopupBloqueado(url,tag);
+    }
+  }catch(e){
+    mostrarPopupBloqueado(url,tag);
+  }
+}
+// toast discreto confirmando a abertura na guia única
+var _etqToastTimer=null;
+function flashEtqAberta(tag){
+  var t=document.getElementById('etqToast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='etqToast';t.className='etq-toast';
+    document.body.appendChild(t);
+  }
+  t.innerHTML='<span class="etq-toast-ico">↗</span><span>Etiqueta <b>'+(tag||'')+'</b> aberta na guia do inFlow</span>';
+  t.classList.add('show');
+  if(_etqToastTimer)clearTimeout(_etqToastTimer);
+  _etqToastTimer=setTimeout(function(){t.classList.remove('show');},2600);
+}
+
+// ── Notificação: alguém validou uma etiqueta ──
+var STLABEL={pres:'validou',ause:'marcou como ausente',corr:'corrigiu'};
+function notificarValidacaoRemota(key, rem){
+  // descobre etiqueta e nome do produto a partir da chave
+  var etq='', nome='';
+  for(var i=0;i<dados.length;i++){
+    if(dados[i].k===key){ etq=dados[i].etiqueta||''; nome=dados[i].nome||''; break; }
+  }
+  if(!etq && !nome){
+    // chave = etiqueta|cod|validade|qtd  → recupera ao menos a etiqueta
+    var parts=String(key).split('|'); etq=parts[0]||'';
+  }
+  var verbo=STLABEL[rem.status]||'atualizou';
+  var quem=rem.by||'Alguém';
+  var msg='<b>'+quem+'</b> '+verbo+' a etiqueta <b>'+(etq||'?')+'</b>'+(nome?(' do '+nome):'');
+  empilharNotif(msg);
+}
+function empilharNotif(html){
+  var wrap=document.getElementById('notifWrap');
+  if(!wrap){
+    wrap=document.createElement('div');
+    wrap.id='notifWrap';wrap.className='notif-wrap';
+    document.body.appendChild(wrap);
+  }
+  var n=document.createElement('div');
+  n.className='notif-card';
+  n.innerHTML='<span class="notif-ico">✓</span><span class="notif-txt">'+html+'</span>';
+  wrap.appendChild(n);
+  requestAnimationFrame(function(){n.classList.add('show');});
+  setTimeout(function(){
+    n.classList.remove('show');
+    setTimeout(function(){if(n.parentNode)n.parentNode.removeChild(n);},350);
+  },4200);
+}
+// fallback caso o navegador bloqueie o window.open (raro, só sem gesto do usuário)
+function mostrarPopupBloqueado(url,tag){
+  var bg=document.getElementById('etqModal');
+  if(!bg){window.open(url,'inflow_etq');return;}
+  document.getElementById('etqModalTag').textContent=tag||'Etiqueta';
+  document.getElementById('etqBlockedOpen').href=url;
+  document.getElementById('etqModalOpen').href=url;
+  document.getElementById('etqLoader').style.display='none';
+  var frame=document.getElementById('etqFrame');if(frame)frame.style.display='none';
+  document.getElementById('etqBlocked').style.display='flex';
+  bg.classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function fecharEtq(){
+  var bg=document.getElementById('etqModal');
+  if(bg)bg.classList.remove('show');
+  document.body.style.overflow='';
+}
+// fechar ao tocar no fundo escuro ou tecla ESC
+document.addEventListener('click',function(e){
+  var bg=document.getElementById('etqModal');
+  if(bg&&e.target===bg)fecharEtq();
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    var bg=document.getElementById('etqModal');
+    if(bg&&bg.classList.contains('show'))fecharEtq();
+    var qm=document.getElementById('qrModal');
+    if(qm&&qm.classList.contains('show'))fecharScanner();
+  }
+});
+
+// ── Scanner de QR Code ──
+var _qrInstance=null;
+var QR_BASE='https://inflow.tec.br/view_etiqueta';
+function abrirScanner(){
+  var bg=document.getElementById('qrModal');
+  var err=document.getElementById('qrErr');
+  var hint=document.getElementById('qrHint');
+  var reader=document.getElementById('qrReader');
+  if(!bg)return;
+  if(typeof Html5Qrcode==='undefined'){
+    alert('Leitor de QR ainda carregando. Tente novamente em instantes.');
+    return;
+  }
+  err.style.display='none';
+  hint.style.display='block';
+  reader.style.display='block';
+  bg.classList.add('show');
+  document.body.style.overflow='hidden';
+
+  _qrInstance=new Html5Qrcode('qrReader',{verbose:false});
+  var cfg={fps:10,qrbox:function(w,h){var m=Math.min(w,h);var s=Math.floor(m*0.7);return{width:s,height:s};},aspectRatio:1.0};
+  _qrInstance.start({facingMode:'environment'},cfg,onQRDecode,function(){/* ignora frames sem QR */})
+    .catch(function(e){ mostrarErroQR(e); });
+}
+function onQRDecode(texto){
+  // evita múltiplas leituras
+  if(_qrInstance && _qrInstance._lido)return;
+  if(_qrInstance)_qrInstance._lido=true;
+  if(navigator.vibrate)try{navigator.vibrate(60);}catch(e){}
+
+  var url=normalizarQR(texto);
+  fecharScanner(function(){
+    abrirEtqURL(url, extrairTag(texto));
+  });
+}
+// monta a URL final a partir do conteúdo lido
+function normalizarQR(t){
+  t=(t||'').trim();
+  // já é uma URL completa
+  if(/^https?:\/\//i.test(t)){
+    // se aponta para a base de etiquetas, usa direto
+    if(/view_etiqueta/i.test(t)) return t;
+    return t;
+  }
+  // QR contém só o código/etiqueta → monta a URL da view
+  return QR_BASE+'?e='+encodeURIComponent(t);
+}
+function extrairTag(t){
+  t=(t||'').trim();
+  try{
+    if(/^https?:\/\//i.test(t)){
+      var u=new URL(t);
+      var e=u.searchParams.get('e');
+      return e||t;
+    }
+  }catch(_){}
+  return t;
+}
+function mostrarErroQR(e){
+  var err=document.getElementById('qrErr');
+  var msg=document.getElementById('qrErrMsg');
+  var hint=document.getElementById('qrHint');
+  var reader=document.getElementById('qrReader');
+  if(hint)hint.style.display='none';
+  if(reader)reader.style.display='none';
+  if(err)err.style.display='flex';
+  var txt='Não foi possível acessar a câmera.';
+  var nm=(e&&(e.name||e.toString()))||'';
+  if(/NotAllowed|Permission/i.test(nm)) txt='Permissão de câmera negada. Habilite o acesso à câmera nas configurações do navegador.';
+  else if(/NotFound|Devices/i.test(nm)) txt='Nenhuma câmera encontrada neste dispositivo.';
+  else if(location.protocol!=='https:'&&location.hostname!=='localhost') txt='A câmera só funciona em conexão segura (HTTPS).';
+  if(msg)msg.textContent=txt;
+}
+function fecharScanner(cb){
+  var bg=document.getElementById('qrModal');
+  function done(){
+    if(bg)bg.classList.remove('show');
+    document.body.style.overflow='';
+    if(cb)cb();
+  }
+  if(_qrInstance){
+    var inst=_qrInstance; _qrInstance=null;
+    inst.stop().then(function(){inst.clear();done();}).catch(function(){try{inst.clear();}catch(e){}done();});
+  } else { done(); }
+}
+document.addEventListener('click',function(e){
+  var bg=document.getElementById('qrModal');
+  if(bg&&e.target===bg)fecharScanner();
+});
 
 function tempoRelativo(ts){
   var s = Math.floor((Date.now() - ts) / 1000);
@@ -918,9 +1429,10 @@ function render(){
   if(!cont)return;
   var termo=(filtroAtual||'').toLowerCase().trim();
 
-  // Separar validadas (com status) das pendentes
+  // Separar por status: validadas (presente/corrigida) | ausentes | pendentes
   var pendentes=[];
   var validadas=[];
+  var ausentes=[];
   for(var i=0;i<dados.length;i++){
     var it=dados[i];
     var est=E[it.k]||{};
@@ -931,41 +1443,61 @@ function render(){
       var nm=String(it.nome||'').toLowerCase();
       if(etq.indexOf(termo)===-1 && cod.indexOf(termo)===-1 && nm.indexOf(termo)===-1) matchFiltro=false;
     }
-    if(est.status){
-      // Item validado — só aparece na aba, não nas cards (a menos que tenha filtro ativo buscando por ele)
+    if(est.status==='ause'){
+      // Ausente → aba própria
+      ausentes.push({item:it,idx:i,est:est});
+    } else if(est.status){
+      // Presente ou Corrigida → continuam no estoque, vão para "Validadas"
       validadas.push({item:it,idx:i,est:est});
     } else {
       if(matchFiltro) pendentes.push({item:it,idx:i,est:est});
     }
   }
 
-  // ── Renderizar painel de validadas ──
+  var stLabels={pres:'PRESENTE',ause:'AUSENTE',corr:'CORRIGIDA'};
+  // monta o HTML de um mini-card de quebra
+  function miniCardHTML(reg){
+    var it=reg.item, est=reg.est;
+    var stLb=stLabels[est.status]||est.status;
+    var stCls=est.status||'';
+    var hasL=it.etiqueta&&it.etiqueta!=='-';
+    var justCls=(it.k===ultimaValidada)?' just-in':'';
+    var ifuMini='https://inflow.tec.br/view_etiqueta?e='+encodeURIComponent(it.etiqueta);
+    var etqTagMini=String(it.etiqueta).replace(/"/g,'&quot;');
+    var quem=est.by?('por <b>'+est.by+'</b>'+(est.ts?(' · '+tempoRelativo(est.ts)):'')):'sem autor';
+    return '<div class="mini-card'+justCls+'">'+
+      (hasL?'<a class="mini-etq" href="'+ifuMini+'" data-etqurl="'+ifuMini+'" data-etqtag="'+etqTagMini+'" onclick="abrirEtq(event,this)">'+it.etiqueta+'</a>':'<span class="mini-etq" style="color:var(--text2)">'+it.etiqueta+'</span>')+
+      '<div class="mini-mid">'+
+        '<span class="mini-nome">'+it.nome+'</span>'+
+        '<span class="mini-by">'+quem+'</span>'+
+      '</div>'+
+      '<span class="mini-st '+stCls+'">'+stLb+'</span>'+
+      '<button class="mini-undo" onclick="desfazerValidacao(\''+it.k+'\')" title="Desfazer validação">↩</button>'+
+      '</div>';
+  }
+
+  // ── Painel Validadas (presente + corrigida) ──
   var panel=document.getElementById('validatedPanel');
   var inner=document.getElementById('validatedInner');
   var countEl=document.getElementById('validatedCount');
   if(validadas.length>0){
     if(panel) panel.style.display='block';
     if(countEl) countEl.textContent=validadas.length;
-    if(inner){
-      var vh='';
-      var stLabels={pres:'PRESENTE',ause:'AUSENTE',corr:'CORRIGIDA'};
-      validadas.forEach(function(reg){
-        var it=reg.item;
-        var est=reg.est;
-        var stLb=stLabels[est.status]||est.status;
-        var stCls=est.status||'';
-        var hasL=it.etiqueta&&it.etiqueta!=='-';
-        vh+='<div class="mini-card">'+
-            (hasL?'<span class="mini-etq">'+it.etiqueta+'</span>':'<span class="mini-etq" style="color:var(--text2)">'+it.etiqueta+'</span>')+
-            '<span class="mini-nome">'+it.nome+'</span>'+
-            '<span class="mini-st '+stCls+'">'+stLb+'</span>'+
-            '<button class="mini-undo" onclick="desfazerValidacao(\''+it.k+'\')" title="Desfazer validação">↩</button>'+
-            '</div>';
-      });
-      inner.innerHTML=vh;
-    }
+    if(inner) inner.innerHTML=validadas.map(miniCardHTML).join('');
   } else {
     if(panel) panel.style.display='none';
+  }
+
+  // ── Painel Ausentes ──
+  var aPanel=document.getElementById('absentPanel');
+  var aInner=document.getElementById('absentInner');
+  var aCount=document.getElementById('absentCount');
+  if(ausentes.length>0){
+    if(aPanel) aPanel.style.display='block';
+    if(aCount) aCount.textContent=ausentes.length;
+    if(aInner) aInner.innerHTML=ausentes.map(miniCardHTML).join('');
+  } else {
+    if(aPanel) aPanel.style.display='none';
   }
 
   // ── Renderizar cards pendentes ──
@@ -1024,7 +1556,7 @@ function render(){
     h+='<div class="card'+(item.obs?' fant':'')+selCls+'"'+cardStyle+' data-cidx="'+i+'">'+
        '<div class="chdr">'+
        '<div class="chdr-left">'+
-       (hasL?'<a class="etq-a" href="'+ifu+'" target="_blank">'+item.etiqueta+'</a>':'<span class="etq-s">'+item.etiqueta+'</span>')+
+       (hasL?'<a class="etq-a" href="'+ifu+'" data-etqurl="'+ifu+'" data-etqtag="'+String(item.etiqueta).replace(/"/g,'&quot;')+'" onclick="abrirEtq(event,this)">'+item.etiqueta+'</a>':'<span class="etq-s">'+item.etiqueta+'</span>')+
        (item.obs?'<span class="ftag">⚠ FANTASMA?</span>':'')+
        '</div>'+
        '<div class="chdr-right">'+
@@ -1054,6 +1586,7 @@ function render(){
   }
   cont.innerHTML=h;
   prog();
+  ultimaValidada=null;
 }
 
 // ── Event listeners delegados ──
