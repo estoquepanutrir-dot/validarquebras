@@ -170,6 +170,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .validated-body.open{max-height:4000px}
 .validated-inner{border-top:1px solid var(--border);padding:8px 10px;display:flex;flex-direction:column;gap:6px}
 
+/* ── Ferramenta de comparação (aba ausentes) ── */
+.absent-tools{padding:9px 10px 4px;border-top:1px solid var(--border)}
+.cmp-btn{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:10px;border:1px dashed var(--red);border-radius:10px;
+  background:#FFF5F4;color:var(--red);
+  font-size:12px;font-weight:800;cursor:pointer;
+  transition:all .12s;
+}
+.cmp-btn:active{transform:scale(.98);background:#FFEBEA}
+.cmp-btn svg{flex-shrink:0}
+/* relatório */
+.cmp-sum{
+  display:flex;gap:8px;margin-bottom:14px;
+}
+.cmp-sum-box{
+  flex:1;text-align:center;background:var(--surface2);
+  border:1px solid var(--border);border-radius:11px;padding:11px 6px;
+}
+.cmp-sum-vl{font-size:22px;font-weight:900;letter-spacing:-.02em}
+.cmp-sum-vl.out{color:var(--green)}
+.cmp-sum-vl.stay{color:var(--red)}
+.cmp-sum-lb{font-size:9.5px;font-weight:700;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+.cmp-sec-title{font-size:12px;font-weight:800;color:var(--text);margin:16px 0 8px;display:flex;align-items:center;gap:6px}
+.cmp-row{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 11px;background:var(--surface2);
+  border-radius:10px;border:1px solid var(--border);margin-bottom:6px;
+}
+.cmp-row .mini-etq{flex-shrink:0}
+.cmp-row-nome{font-size:11px;color:var(--text2);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.cmp-row-tag{font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap;text-transform:uppercase}
+.cmp-row-tag.out{background:#E8FBF0;color:#1A7A3A}
+.cmp-empty{text-align:center;padding:40px 20px;color:var(--text2);font-size:13px}
+
 /* mini-card para validadas */
 .mini-card{
   display:flex;align-items:center;gap:10px;
@@ -571,6 +606,12 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
       <span id="absentArrow" class="validated-toggle-arrow">▼</span>
     </button>
     <div id="absentBody" class="validated-body">
+      <div class="absent-tools">
+        <button class="cmp-btn" onclick="compararPlanilha()" title="Subir outra planilha para ver quais ausentes já saíram">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Comparar com outra planilha
+        </button>
+      </div>
       <div id="absentInner" class="validated-inner"></div>
     </div>
   </div>
@@ -581,6 +622,22 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 
 <!-- FILE INPUT -->
 <input type="file" id="fileInputGlobal" accept=".xlsx,.xls,.csv" style="display:none" onchange="processarArquivo(this.files[0])"/>
+<input type="file" id="fileInputCompare" accept=".xlsx,.xls,.csv" style="display:none" onchange="processarComparacao(this.files[0])"/>
+
+<!-- MODAL: Relatório de comparação -->
+<div id="cmpModal" class="etq-modal-bg">
+  <div class="etq-modal">
+    <div class="etq-modal-hdr">
+      <span class="etq-modal-tag">📋 Ausentes que já saíram</span>
+      <span class="etq-modal-spacer"></span>
+      <button id="cmpExportBtn" class="etq-modal-ext" onclick="exportarRelatorioSaidas()" style="display:none">⬇ Excel</button>
+      <button class="etq-modal-close" onclick="fecharCmp()" title="Fechar">×</button>
+    </div>
+    <div class="etq-modal-body" style="overflow-y:auto;-webkit-overflow-scrolling:touch">
+      <div id="cmpResultado" style="padding:14px"></div>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL: Etiqueta (iframe) -->
 <div id="etqModal" class="etq-modal-bg">
@@ -1444,15 +1501,20 @@ function render(){
       if(etq.indexOf(termo)===-1 && cod.indexOf(termo)===-1 && nm.indexOf(termo)===-1) matchFiltro=false;
     }
     if(est.status==='ause'){
-      // Ausente → aba própria
-      ausentes.push({item:it,idx:i,est:est});
+      // Ausente → aba própria (respeita a busca)
+      if(matchFiltro) ausentes.push({item:it,idx:i,est:est});
     } else if(est.status){
-      // Presente ou Corrigida → continuam no estoque, vão para "Validadas"
-      validadas.push({item:it,idx:i,est:est});
+      // Presente ou Corrigida → continuam no estoque, vão para "Validadas" (respeita a busca)
+      if(matchFiltro) validadas.push({item:it,idx:i,est:est});
     } else {
       if(matchFiltro) pendentes.push({item:it,idx:i,est:est});
     }
   }
+
+  // mais recente primeiro (facilita desfazer engano)
+  var _porRecente=function(a,b){return ((b.est&&b.est.ts)||0)-((a.est&&a.est.ts)||0);};
+  validadas.sort(_porRecente);
+  ausentes.sort(_porRecente);
 
   var stLabels={pres:'PRESENTE',ause:'AUSENTE',corr:'CORRIGIDA'};
   // monta o HTML de um mini-card de quebra
@@ -1484,6 +1546,10 @@ function render(){
     if(panel) panel.style.display='block';
     if(countEl) countEl.textContent=validadas.length;
     if(inner) inner.innerHTML=validadas.map(miniCardHTML).join('');
+    // durante a busca, abre o painel para mostrar os resultados
+    var vAberto = termo ? true : _validatedOpen;
+    document.getElementById('validatedBody').classList.toggle('open', vAberto);
+    document.getElementById('validatedArrow').classList.toggle('open', vAberto);
   } else {
     if(panel) panel.style.display='none';
   }
@@ -1496,6 +1562,9 @@ function render(){
     if(aPanel) aPanel.style.display='block';
     if(aCount) aCount.textContent=ausentes.length;
     if(aInner) aInner.innerHTML=ausentes.map(miniCardHTML).join('');
+    var aAberto = termo ? true : _absentOpen;
+    document.getElementById('absentBody').classList.toggle('open', aAberto);
+    document.getElementById('absentArrow').classList.toggle('open', aAberto);
   } else {
     if(aPanel) aPanel.style.display='none';
   }
@@ -1897,6 +1966,153 @@ function reimportar(){
   var fi=document.getElementById('fileInputGlobal');
   if(fi){fi.value='';fi.click();}
 }
+
+// ═══════════════════════════════════════════════════════════════
+// COMPARAÇÃO: quais ausentes já saíram da importação atual
+// ═══════════════════════════════════════════════════════════════
+var _relatorioSaidas=null; // guarda o resultado para exportar
+
+// chave de comparação = etiqueta + SKU (normalizada)
+function _chaveCmp(etq,cod){
+  return String(etq||'').trim().toUpperCase()+'@@'+String(cod||'').trim().replace(/\.0+$/,'').replace(/\s/g,'');
+}
+
+function compararPlanilha(){
+  // precisa ter ausentes para comparar
+  var temAusente=false;
+  for(var k in E){ if(E[k]&&E[k].status==='ause'){temAusente=true;break;} }
+  if(!temAusente){ alert('Não há etiquetas ausentes para comparar.'); return; }
+  if(typeof XLSX==='undefined'){ alert('Biblioteca de planilha ainda carregando. Aguarde.'); return; }
+  var fi=document.getElementById('fileInputCompare');
+  if(fi){ fi.value=''; fi.click(); }
+}
+
+function processarComparacao(file){
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(evt){
+    try{
+      var wb=XLSX.read(new Uint8Array(evt.target.result),{type:'array',cellDates:true});
+      var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+      gerarRelatorioSaidas(rows,file.name);
+    }catch(e){ alert('Erro ao ler planilha de comparação: '+e.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function gerarRelatorioSaidas(rows,fileName){
+  // 1) conjunto de chaves presentes na NOVA planilha (todas as linhas, sem filtro de quebra)
+  var presentesNova={};
+  rows.forEach(function(row){
+    var n={};Object.keys(row||{}).forEach(function(k){n[_nKey(k)]=row[k];});
+    var cod=String(_gField(n,['COD','CODIGO','SKU'])).trim().replace(/\.0+$/,'').replace(/\s/g,'');
+    var etq=String(_gField(n,['ETIQUETA'])).trim();
+    if(!etq && !cod) return;
+    presentesNova[_chaveCmp(etq,cod)]=true;
+  });
+
+  // 2) varre as ausentes atuais e separa: já saiu (não está na nova) x ainda presente
+  var sairam=[], ficaram=[];
+  for(var i=0;i<dados.length;i++){
+    var it=dados[i];
+    var est=E[it.k];
+    if(!est || est.status!=='ause') continue;
+    var ch=_chaveCmp(it.etiqueta, it._cod);
+    var reg={etiqueta:it.etiqueta, sku:it._cod, nome:it.nome, validade:it.data, total:it.total, by:est.by||'', ts:est.ts||0};
+    if(presentesNova[ch]) ficaram.push(reg);
+    else sairam.push(reg);
+  }
+  // mais recente primeiro
+  var rec=function(a,b){return (b.ts||0)-(a.ts||0);};
+  sairam.sort(rec); ficaram.sort(rec);
+
+  _relatorioSaidas={sairam:sairam, ficaram:ficaram, arquivo:fileName, data:new Date()};
+  renderRelatorioSaidas();
+}
+
+function renderRelatorioSaidas(){
+  var r=_relatorioSaidas; if(!r)return;
+  var el=document.getElementById('cmpResultado');
+  var btn=document.getElementById('cmpExportBtn');
+  var total=r.sairam.length+r.ficaram.length;
+
+  var html='<div style="font-size:11px;color:var(--text3);margin-bottom:12px;word-break:break-all">Comparado com: <b style="color:var(--text2)">'+(r.arquivo||'planilha')+'</b></div>';
+  html+='<div class="cmp-sum">'+
+    '<div class="cmp-sum-box"><div class="cmp-sum-vl out">'+r.sairam.length+'</div><div class="cmp-sum-lb">Já saíram</div></div>'+
+    '<div class="cmp-sum-box"><div class="cmp-sum-vl stay">'+r.ficaram.length+'</div><div class="cmp-sum-lb">Ainda no estoque</div></div>'+
+    '<div class="cmp-sum-box"><div class="cmp-sum-vl">'+total+'</div><div class="cmp-sum-lb">Total ausentes</div></div>'+
+    '</div>';
+
+  // seção: já saíram (o relatório principal)
+  html+='<div class="cmp-sec-title">✓ Ausentes que já saíram da importação</div>';
+  if(r.sairam.length===0){
+    html+='<div class="cmp-empty">Nenhuma etiqueta ausente saiu — todas ainda constam na nova planilha.</div>';
+  } else {
+    r.sairam.forEach(function(x){
+      var hasL=x.etiqueta&&x.etiqueta!=='-';
+      var ifu='https://inflow.tec.br/view_etiqueta?e='+encodeURIComponent(x.etiqueta);
+      var etqEsc=String(x.etiqueta).replace(/"/g,'&quot;');
+      html+='<div class="cmp-row">'+
+        (hasL?'<a class="mini-etq" href="'+ifu+'" data-etqurl="'+ifu+'" data-etqtag="'+etqEsc+'" onclick="abrirEtq(event,this)">'+x.etiqueta+'</a>':'<span class="mini-etq" style="color:var(--text2)">'+x.etiqueta+'</span>')+
+        '<span class="cmp-row-nome">'+x.nome+'</span>'+
+        '<span class="cmp-row-tag out">SAIU</span>'+
+        '</div>';
+    });
+  }
+
+  // seção: ainda no estoque (referência)
+  if(r.ficaram.length>0){
+    html+='<div class="cmp-sec-title" style="color:var(--text2)">↺ Ainda ausentes no estoque</div>';
+    r.ficaram.forEach(function(x){
+      var hasL=x.etiqueta&&x.etiqueta!=='-';
+      var ifu='https://inflow.tec.br/view_etiqueta?e='+encodeURIComponent(x.etiqueta);
+      var etqEsc=String(x.etiqueta).replace(/"/g,'&quot;');
+      html+='<div class="cmp-row" style="opacity:.7">'+
+        (hasL?'<a class="mini-etq" href="'+ifu+'" data-etqurl="'+ifu+'" data-etqtag="'+etqEsc+'" onclick="abrirEtq(event,this)">'+x.etiqueta+'</a>':'<span class="mini-etq" style="color:var(--text2)">'+x.etiqueta+'</span>')+
+        '<span class="cmp-row-nome">'+x.nome+'</span>'+
+        '</div>';
+    });
+  }
+
+  el.innerHTML=html;
+  if(btn) btn.style.display=(r.sairam.length>0)?'inline-block':'none';
+
+  var bg=document.getElementById('cmpModal');
+  if(bg){ bg.classList.add('show'); document.body.style.overflow='hidden'; }
+}
+
+function fecharCmp(){
+  var bg=document.getElementById('cmpModal');
+  if(bg)bg.classList.remove('show');
+  document.body.style.overflow='';
+}
+
+function exportarRelatorioSaidas(){
+  var r=_relatorioSaidas; if(!r||!r.sairam.length)return;
+  if(typeof XLSX==='undefined'){alert('Biblioteca de planilha indisponível.');return;}
+  var aoa=[['ETIQUETA','SKU','PRODUTO','VALIDADE','QTD','MARCADO POR','STATUS']];
+  r.sairam.forEach(function(x){
+    aoa.push([x.etiqueta, x.sku, x.nome, x.validade, x.total, x.by, 'JÁ SAIU']);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:14},{wch:10},{wch:34},{wch:12},{wch:8},{wch:16},{wch:12}];
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Ausentes que sairam');
+  var d=r.data||new Date();
+  var nome='ausentes_sairam_'+d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2)+'.xlsx';
+  XLSX.writeFile(wb,nome);
+}
+// fechar modal de comparação por fundo/ESC
+document.addEventListener('click',function(e){
+  var bg=document.getElementById('cmpModal');
+  if(bg&&e.target===bg)fecharCmp();
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    var bg=document.getElementById('cmpModal');
+    if(bg&&bg.classList.contains('show'))fecharCmp();
+  }
+});
 </script>
 </body>
 </html>
