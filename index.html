@@ -38,7 +38,7 @@
   --radius-sm:9px;
   --radius-lg:20px;
 }
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);padding-bottom:80px;color:var(--text)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);padding-bottom:calc(72px + env(safe-area-inset-bottom));color:var(--text)}
 
 /* ── Header iOS glassmorphism ── */
 .hdr{
@@ -551,6 +551,95 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
   -webkit-backdrop-filter:blur(20px) saturate(180%);
 }
 
+/* ── Bottom Nav ── */
+.bottom-nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:200;
+  display:flex;
+  background:rgba(248,249,252,0.82);
+  backdrop-filter:saturate(180%) blur(24px);
+  -webkit-backdrop-filter:saturate(180%) blur(24px);
+  border-top:1px solid var(--border);
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+}
+.bnav-btn{
+  flex:1;border:none;background:none;cursor:pointer;position:relative;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 0;color:var(--text3);transition:color .15s;
+}
+.bnav-btn.active{color:var(--blue)}
+.bnav-btn svg{width:22px;height:22px}
+.bnav-lb{font-size:10px;font-weight:800;letter-spacing:.01em}
+.view{display:none}
+.view.active{display:block}
+
+/* ── Pilhas view ── */
+.pilhas-wrap{padding:10px 12px 20px}
+.pilhas-hdr-info{
+  font-size:11px;color:var(--text2);line-height:1.5;
+  background:var(--surface2);border-radius:11px;padding:11px 13px;margin-bottom:12px;
+}
+.pilha-empty{text-align:center;padding:50px 20px;color:var(--text2);font-size:13px;line-height:1.6}
+.pilha-card{
+  background:var(--surface);border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);margin-bottom:12px;overflow:hidden;
+  border-left:4px solid var(--accent);
+}
+.pilha-card.done{border-left-color:var(--green);opacity:.72}
+.pilha-card.done.div{border-left-color:var(--orange)}
+.pilha-card-hd{padding:12px 14px 10px;display:flex;align-items:flex-start;gap:10px}
+.pilha-card-nm{flex:1;min-width:0}
+.pilha-card-prod{font-size:13px;font-weight:800;color:var(--text);line-height:1.3;margin-bottom:3px}
+.pilha-card-meta{font-size:10px;color:var(--text3);font-weight:600}
+.pilha-card-meta b{color:var(--text2)}
+.pilha-esp{text-align:center;background:var(--surface2);border-radius:10px;padding:7px 11px;flex-shrink:0}
+.pilha-esp-vl{font-size:20px;font-weight:900;color:var(--blue);line-height:1}
+.pilha-esp-lb{font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.cont-list{padding:0 14px}
+.cont-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.cont-nm{
+  flex:1;min-width:0;border:1.5px solid var(--border);border-radius:9px;
+  padding:9px 11px;font-size:12px;font-weight:700;color:var(--text);
+  outline:none;background:var(--surface2);transition:border-color .15s;
+}
+.cont-nm:focus{border-color:var(--accent);background:#fff}
+.cont-qtd{
+  width:74px;border:1.5px solid var(--border);border-radius:9px;
+  padding:9px 8px;font-size:15px;font-weight:800;text-align:center;color:var(--blue);
+  outline:none;transition:border-color .15s;
+}
+.cont-qtd:focus{border-color:var(--accent)}
+.cont-del{
+  width:30px;height:30px;flex-shrink:0;border:none;border-radius:8px;
+  background:var(--surface2);color:var(--text3);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .12s;
+}
+.cont-del:active{transform:scale(.88);background:#FFE5E5;color:var(--red)}
+.pilha-add{
+  display:inline-flex;align-items:center;gap:5px;
+  background:none;border:1.5px dashed var(--border);border-radius:9px;
+  padding:7px 13px;font-size:11px;font-weight:800;color:var(--accent);
+  cursor:pointer;margin:2px 0 10px;transition:all .12s;
+}
+.pilha-add:active{transform:scale(.96);background:var(--surface2)}
+.pilha-foot{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface2)}
+.pilha-soma{flex:1}
+.pilha-soma-vl{font-size:19px;font-weight:900;color:var(--text);line-height:1}
+.pilha-soma-vl.ok{color:var(--green)}
+.pilha-soma-vl.div{color:var(--orange)}
+.pilha-soma-lb{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.pilha-diff{font-size:10px;font-weight:800;margin-top:2px}
+.pilha-diff.falta{color:var(--red)}
+.pilha-diff.sobra{color:var(--orange)}
+.btn-valpilha{
+  border:none;border-radius:10px;padding:11px 18px;
+  font-size:12px;font-weight:800;cursor:pointer;color:#fff;
+  background:var(--blue);transition:all .12s;white-space:nowrap;
+}
+.btn-valpilha:active{transform:scale(.95)}
+.pilha-validated-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:var(--green)}
+.pilha-validated-tag.div{color:var(--orange)}
+.btn-undo-pilha{background:none;border:none;color:var(--text3);font-size:11px;font-weight:700;cursor:pointer;text-decoration:underline;padding:4px}
+
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
 }
@@ -574,6 +663,9 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 
   <!-- PROGRESS BAR -->
   <div class="pbar-bg"><div class="pbar" id="pbar"></div></div>
+
+  <!-- ════════ VIEW: QUEBRAS ════════ -->
+  <div id="viewQuebras" class="view active">
 
   <!-- SEARCH + TOOLS BAR -->
   <div class="search-bar">
@@ -618,6 +710,29 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 
   <!-- MAIN CARDS -->
   <div class="cards" id="cards"></div>
+  </div><!-- /viewQuebras -->
+
+  <!-- ════════ VIEW: PILHAS ════════ -->
+  <div id="viewPilhas" class="view">
+    <div class="pilhas-wrap">
+      <div class="pilhas-hdr-info">
+        <b>Validação de pilhas.</b> Cada SKU mostra quantas pilhas cheias existem no estoque (etiquetas com a quantidade igual ao lastro). Conte os blocos do estoque usando o botão <b>+</b> e valide. Se a soma não bater, você pode validar com divergência.
+      </div>
+      <div id="pilhasInner"></div>
+    </div>
+  </div>
+
+  <!-- ════════ BOTTOM NAV ════════ -->
+  <div class="bottom-nav">
+    <button id="navQuebras" class="bnav-btn active" onclick="trocarView('quebras')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span class="bnav-lb">Quebras</span>
+    </button>
+    <button id="navPilhas" class="bnav-btn" onclick="trocarView('pilhas')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="1"/><rect x="5" y="8" width="14" height="6" rx="1"/><rect x="7" y="2" width="10" height="6" rx="1"/></svg>
+      <span class="bnav-lb">Pilhas</span>
+    </button>
+  </div>
 </div>
 
 <!-- FILE INPUT -->
@@ -830,6 +945,241 @@ var modoSoma = false;
 var somaSel = {};
 
 // ═══════════════════════════════════════════════════════════════
+// PILHAS — estado e troca de view
+// ═══════════════════════════════════════════════════════════════
+var pilhasDB = [];          // [{cod,nome,lastro,esperado}]
+var rowsRaw = [];           // linhas essenciais da planilha p/ reconstruir pilhas
+var SKP = 'conf_p_' + _dataKey();
+var SKPDB = 'pilhas_db_' + _dataKey();
+var SKROWS = 'pilhas_rows_' + _dataKey();
+var P = {};                 // estado por SKU: { cod: { conts:[{nm,qtd}], validado:bool, diff:int } }
+try { P = JSON.parse(localStorage.getItem(SKP) || '{}'); } catch(e) {}
+try { pilhasDB = JSON.parse(localStorage.getItem(SKPDB) || '[]'); } catch(e) { pilhasDB = []; }
+try { rowsRaw = JSON.parse(localStorage.getItem(SKROWS) || '[]'); } catch(e) { rowsRaw = []; }
+var viewAtual = 'quebras';
+
+function _savePilhas(){ try{ localStorage.setItem(SKP, JSON.stringify(P)); }catch(e){} }
+function _saveRowsRaw(){ try{ localStorage.setItem(SKROWS, JSON.stringify(rowsRaw)); }catch(e){} }
+function _savePilhasDB(){ try{ localStorage.setItem(SKPDB, JSON.stringify(pilhasDB)); }catch(e){} }
+
+// garante que cada SKU em pilhasDB tem entrada em P (sem apagar contagens já feitas)
+function _ensurePilhaState(){
+  pilhasDB.forEach(function(p){
+    if(!P[p.cod]) P[p.cod]={conts:[{nm:'Cont 1',qtd:''}],validado:false,diff:0};
+    if(!P[p.cod].conts || !P[p.cod].conts.length) P[p.cod].conts=[{nm:'Cont 1',qtd:''}];
+  });
+  _savePilhas();
+}
+
+function trocarView(v){
+  viewAtual = v;
+  document.getElementById('viewQuebras').classList.toggle('active', v==='quebras');
+  document.getElementById('viewPilhas').classList.toggle('active', v==='pilhas');
+  document.getElementById('navQuebras').classList.toggle('active', v==='quebras');
+  document.getElementById('navPilhas').classList.toggle('active', v==='pilhas');
+  // troca ação do botão PDF do header conforme a aba
+  var pdfBtn = document.querySelector('.hdr-btn-pdf');
+  if(pdfBtn){
+    pdfBtn.setAttribute('onclick', v==='pilhas' ? 'gerarPDFPilhas()' : 'gerarPDF()');
+    pdfBtn.title = v==='pilhas' ? 'Gerar PDF de pilhas' : 'Gerar PDF de quebras';
+  }
+  if(v==='pilhas'){
+    if((!pilhasDB || !pilhasDB.length) && rowsRaw && rowsRaw.length){ _reconstruirPilhas(); _ensurePilhaState(); _savePilhasDB(); }
+    renderPilhas();
+  }
+  window.scrollTo(0,0);
+}
+
+// Reconstrói pilhasDB a partir das linhas da planilha (qtd == lastro)
+function montarPilhas(rows){
+  // guarda linhas essenciais (cod, produto, qtd) p/ reconstruir depois
+  rowsRaw = [];
+  rows.forEach(function(row){
+    var n={};Object.keys(row||{}).forEach(function(k){n[_nKey(k)]=row[k];});
+    var cod=String(_gField(n,['COD','CODIGO','SKU'])).trim().replace(/\.0+$/,'').replace(/\s/g,'');
+    var produto=String(_gField(n,['PRODUTO','DESCRICAO','ITEM'])).trim();
+    var qtd=Math.round(_pNum(_gField(n,['QTD_TOTAL','QTD','ESTOQUE'])));
+    if(!cod||!produto||!qtd)return;
+    rowsRaw.push({c:cod,p:produto,q:qtd});
+  });
+  _saveRowsRaw();
+  _reconstruirPilhas();
+}
+
+// Reconstrói pilhasDB a partir de rowsRaw (qtd == lastro)
+function _reconstruirPilhas(){
+  var mapa = {};
+  rowsRaw.forEach(function(r){
+    var cod=r.c, produto=r.p, qtd=r.q;
+    var lastro=_gLastro(cod,produto);
+    if(qtd!==lastro)return; // só pilha cheia
+    if(!mapa[cod]) mapa[cod]={cod:cod,nome:produto,lastro:lastro,esperado:0};
+    mapa[cod].esperado++;
+  });
+  // segue a mesma ordem usada nas quebras
+  var _ordem=[81571,81591,162396,16,81581,11,145521,145511,655,1224,6,69251,82051,2,81661,85841,162800,162767,85181,162802,135231,135221,135211,162275,135241,162276,162923,162920,162921,162922,121801,121581,121811,121831,121821,121861,121871,162358,121841,162783,162784,669,162775,162272,141951,141441];
+  pilhasDB = Object.keys(mapa).map(function(c){return mapa[c];}).sort(function(a,b){
+    var ia=_ordem.indexOf(Number(a.cod)),ib=_ordem.indexOf(Number(b.cod));
+    var pA=ia===-1?Infinity:ia,pB=ib===-1?Infinity:ib;
+    if(pA!==pB)return pA-pB;
+    return String(a.cod).localeCompare(String(b.cod));
+  });
+  // garante estrutura P para cada SKU (preserva contagens já digitadas hoje)
+  _ensurePilhaState();
+  _savePilhasDB();
+}
+
+function _somaPilha(cod){
+  var st=P[cod]; if(!st) return 0;
+  return st.conts.reduce(function(s,c){ var v=parseInt(c.qtd,10); return s+(isNaN(v)?0:v); },0);
+}
+
+function renderPilhas(){
+  var el=document.getElementById('pilhasInner');
+  if(!el) return;
+  if(!pilhasDB.length){
+    var temQuebras = dados && dados.length;
+    el.innerHTML='<div class="pilha-empty">Nenhuma pilha carregada ainda.<br><br>'+
+      (temQuebras
+        ? 'As quebras estão carregadas, mas as pilhas precisam da planilha completa. '+(isAdmin?'Toque em <b>📂 (importar)</b> no topo para reimportar a planilha de estoque.':'Peça para o admin reimportar a planilha.')
+        : 'Importe a planilha de estoque na aba <b>Quebras</b> para carregar os SKUs.')+
+      '</div>';
+    return;
+  }
+  var html='';
+  pilhasDB.forEach(function(p){
+    var st=P[p.cod]||{conts:[{nm:'Cont 1',qtd:''}],validado:false,diff:0};
+    var soma=_somaPilha(p.cod);
+    var diff=soma - p.esperado;
+    var validado=st.validado;
+    var cardCls='pilha-card'+(validado?' done':'')+(validado&&st.diff!==0?' div':'');
+
+    html+='<div class="'+cardCls+'" data-cod="'+p.cod+'">';
+    // header
+    html+='<div class="pilha-card-hd">'+
+            '<div class="pilha-card-nm">'+
+              '<div class="pilha-card-prod">'+p.nome+'</div>'+
+              '<div class="pilha-card-meta">SKU <b>'+p.cod+'</b> &middot; lastro <b>'+p.lastro+'</b> un</div>'+
+            '</div>'+
+            '<div class="pilha-esp"><div class="pilha-esp-vl">'+p.esperado+'</div><div class="pilha-esp-lb">Pilhas estoque</div></div>'+
+          '</div>';
+
+    if(validado){
+      // estado validado: resumo + desfazer
+      var tag = st.diff===0
+        ? '<span class="pilha-validated-tag">✓ Validado &middot; '+soma+' pilhas</span>'
+        : '<span class="pilha-validated-tag div">⚠ Validado c/ DIV &middot; '+soma+' contadas ('+(st.diff>0?'+':'')+st.diff+')</span>';
+      html+='<div class="pilha-foot">'+
+              '<div class="pilha-soma">'+tag+'</div>'+
+              '<button class="btn-undo-pilha" onclick="desfazerPilha(\''+p.cod+'\')">↩ Refazer</button>'+
+            '</div>';
+    } else {
+      // contagens editáveis
+      html+='<div class="cont-list">';
+      st.conts.forEach(function(c,ci){
+        html+='<div class="cont-row">'+
+                '<input class="cont-nm" value="'+String(c.nm||'').replace(/"/g,'&quot;')+'" oninput="editarContNome(\''+p.cod+'\','+ci+',this.value)" placeholder="Nome"/>'+
+                '<input class="cont-qtd" type="number" inputmode="numeric" pattern="[0-9]*" min="0" value="'+(c.qtd===''?'':c.qtd)+'" oninput="editarContQtd(\''+p.cod+'\','+ci+',this.value)" placeholder="0"/>'+
+                (st.conts.length>1?'<button class="cont-del" onclick="removerCont(\''+p.cod+'\','+ci+')">×</button>':'<span style="width:30px;flex-shrink:0"></span>')+
+              '</div>';
+      });
+      html+='</div>';
+      html+='<button class="pilha-add" onclick="adicionarCont(\''+p.cod+'\')">＋ Adicionar contagem</button>';
+      // footer com soma e validar
+      var somaCls = soma===p.esperado ? 'ok' : (soma>0||st.conts.some(function(c){return c.qtd!=='';}) ? 'div' : '');
+      var diffHtml='';
+      if(diff!==0){
+        diffHtml = diff<0
+          ? '<div class="pilha-diff falta">Faltam '+(-diff)+'</div>'
+          : '<div class="pilha-diff sobra">Sobram '+diff+'</div>';
+      } else if(soma>0){
+        diffHtml = '<div class="pilha-diff" style="color:var(--green)">Bateu certinho ✓</div>';
+      }
+      html+='<div class="pilha-foot">'+
+              '<div class="pilha-soma">'+
+                '<div class="pilha-soma-vl '+somaCls+'" id="soma-'+p.cod+'">'+soma+'</div>'+
+                '<div class="pilha-soma-lb">Contadas / '+p.esperado+' esperadas</div>'+
+                diffHtml+
+              '</div>'+
+              '<button class="btn-valpilha" onclick="validarPilha(\''+p.cod+'\')">Validar</button>'+
+            '</div>';
+    }
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+
+function adicionarCont(cod){
+  var st=P[cod]; if(!st) return;
+  st.conts.push({nm:'Cont '+(st.conts.length+1), qtd:''});
+  _savePilhas(); renderPilhas();
+  // foca o último campo de qtd
+  setTimeout(function(){
+    var card=document.querySelector('.pilha-card[data-cod="'+cod+'"]');
+    if(card){ var qs=card.querySelectorAll('.cont-qtd'); if(qs.length) qs[qs.length-1].focus(); }
+  },30);
+}
+function removerCont(cod,ci){
+  var st=P[cod]; if(!st||st.conts.length<=1) return;
+  st.conts.splice(ci,1);
+  _savePilhas(); renderPilhas();
+}
+function editarContNome(cod,ci,val){
+  var st=P[cod]; if(!st||!st.conts[ci]) return;
+  st.conts[ci].nm=val; _savePilhas();
+}
+function editarContQtd(cod,ci,val){
+  var st=P[cod]; if(!st||!st.conts[ci]) return;
+  st.conts[ci].qtd = val===''?'':String(val).replace(/[^0-9]/g,'');
+  _savePilhas();
+  // atualiza soma em tempo real sem re-render completo
+  var soma=_somaPilha(cod);
+  var p=pilhasDB.find(function(x){return x.cod===cod;});
+  var somaEl=document.getElementById('soma-'+cod);
+  if(somaEl){
+    somaEl.textContent=soma;
+    somaEl.className='pilha-soma-vl '+(p&&soma===p.esperado?'ok':(soma>0?'div':''));
+  }
+  // atualiza linha de diferença
+  if(p){
+    var card=document.querySelector('.pilha-card[data-cod="'+cod+'"]');
+    if(card){
+      var old=card.querySelector('.pilha-diff'); if(old) old.remove();
+      var diff=soma-p.esperado, dh=null;
+      if(diff!==0){
+        dh=document.createElement('div');
+        dh.className='pilha-diff '+(diff<0?'falta':'sobra');
+        dh.textContent=diff<0?('Faltam '+(-diff)):('Sobram '+diff);
+      } else if(soma>0){
+        dh=document.createElement('div'); dh.className='pilha-diff'; dh.style.color='var(--green)'; dh.textContent='Bateu certinho ✓';
+      }
+      if(dh && somaEl) somaEl.parentNode.appendChild(dh);
+    }
+  }
+}
+
+function validarPilha(cod){
+  var st=P[cod]; var p=pilhasDB.find(function(x){return x.cod===cod;});
+  if(!st||!p) return;
+  var soma=_somaPilha(cod);
+  var diff=soma-p.esperado;
+  if(diff!==0){
+    var msg='O item "'+p.nome+'" está com DIVERGÊNCIA.\n\n'+
+            'Contadas: '+soma+' pilhas\nEsperadas: '+p.esperado+' pilhas\n'+
+            (diff<0?('Faltam '+(-diff)+' pilha(s).'):('Sobram '+diff+' pilha(s).'))+
+            '\n\nDeseja validar assim mesmo?';
+    if(!confirm(msg)) return;
+  }
+  st.validado=true; st.diff=diff; st.soma=soma;
+  _savePilhas(); renderPilhas();
+}
+function desfazerPilha(cod){
+  var st=P[cod]; if(!st) return;
+  st.validado=false;
+  _savePilhas(); renderPilhas();
+}
+
+// ═══════════════════════════════════════════════════════════════
 // FIREBASE REALTIME DATABASE
 // ═══════════════════════════════════════════════════════════════
 var FB_URL = 'https://validaquebra-default-rtdb.firebaseio.com';
@@ -933,7 +1283,7 @@ function pushDados(tentativa){
   fetch(_fbDadosURL(), {
     method: 'PUT',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({dados: dados, ts: Date.now()})
+    body: JSON.stringify({dados: dados, pilhas: pilhasDB, rows: rowsRaw, ts: Date.now()})
   })
   .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
   .then(function(){
@@ -965,6 +1315,11 @@ function _iniciarPollDados(){
           dados = d.dados.map(function(it){
             return Object.assign({},it,{_val:it._val?Number(it._val):Infinity});
           });
+          if(d.rows && Array.isArray(d.rows) && d.rows.length){ rowsRaw=d.rows; _saveRowsRaw(); }
+          if(d.pilhas && Array.isArray(d.pilhas) && d.pilhas.length){ pilhasDB = d.pilhas; }
+          else if(rowsRaw.length){ _reconstruirPilhas(); }
+          _ensurePilhaState(); _savePilhasDB();
+          if(viewAtual==='pilhas') renderPilhas();
           clearInterval(_pollDadosTimer); _pollDadosTimer = null;
           render(); prog();
           console.log('[pollDados] recebidos:', dados.length, 'itens');
@@ -991,6 +1346,11 @@ function iniciarConferencia(){
         dados = remDados.dados.map(function(it){
           return Object.assign({},it,{_val:it._val?Number(it._val):Infinity});
         });
+        if(remDados.rows && Array.isArray(remDados.rows) && remDados.rows.length){ rowsRaw=remDados.rows; _saveRowsRaw(); }
+        if(remDados.pilhas && Array.isArray(remDados.pilhas) && remDados.pilhas.length){ pilhasDB = remDados.pilhas; }
+        else if(rowsRaw.length){ _reconstruirPilhas(); }
+        _ensurePilhaState(); _savePilhasDB();
+        if(viewAtual==='pilhas') renderPilhas();
         mudou = true;
       }
       if(remConf && typeof remConf === 'object'){
@@ -1845,6 +2205,142 @@ function gerarPDF(){
 }
 
 // ═══════════════════════════════════════════════════════════════
+// PDF — PILHAS
+// ═══════════════════════════════════════════════════════════════
+function gerarPDFPilhas(){
+  if(!window.jspdf){alert('Aguarde o carregamento do PDF.');return;}
+  if(!pilhasDB.length){alert('Nenhuma pilha carregada. Importe a planilha primeiro.');return;}
+
+  // só entram SKUs validados
+  var lista=[];
+  pilhasDB.forEach(function(p){
+    var st=P[p.cod];
+    if(st && st.validado){
+      var soma=(typeof st.soma==='number')?st.soma:_somaPilha(p.cod);
+      lista.push({cod:p.cod, nome:p.nome, lastro:p.lastro, esperado:p.esperado, contadas:soma, diff:(typeof st.diff==='number'?st.diff:soma-p.esperado), conts:st.conts});
+    }
+  });
+  if(!lista.length){ alert('Nenhuma pilha validada ainda. Valide os SKUs antes de gerar o PDF.'); return; }
+
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var pgW=doc.internal.pageSize.getWidth();
+  var pgH=doc.internal.pageSize.getHeight();
+  var hoje=new Date().toLocaleDateString('pt-BR');
+
+  var nOk=lista.filter(function(x){return x.diff===0;}).length;
+  var nDiv=lista.length-nOk;
+  var totEsp=lista.reduce(function(s,x){return s+x.esperado;},0);
+  var totCont=lista.reduce(function(s,x){return s+x.contadas;},0);
+
+  // header
+  doc.setFillColor(88,86,214);doc.rect(0,0,pgW,1.5,'F');
+  doc.setFillColor(250,250,253);doc.rect(0,1.5,pgW,28,'F');
+  doc.setDrawColor(235,235,242);doc.setLineWidth(0.3);doc.line(0,29.5,pgW,29.5);
+  doc.setFont('helvetica','bold');doc.setFontSize(17);doc.setTextColor(28,28,30);
+  doc.text('Validação de Pilhas',10,14);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(108,108,112);
+  doc.text('Conferência de pilhas cheias por SKU — CD Matriz Panutrir',10,20);
+  doc.text('Gerado em: '+hoje+'  •  Conferente: '+(ME||'-'),10,26);
+
+  // KPIs
+  var kpiY=33,kpiH=16,kpiW=(pgW-20)/4;
+  var kpis=[
+    {lb:'SKUs VALIDADOS',vl:lista.length,c:[88,86,214]},
+    {lb:'OK',vl:nOk,c:[52,199,89]},
+    {lb:'COM DIVERG.',vl:nDiv,c:[255,149,0]},
+    {lb:'PILHAS CONTADAS',vl:totCont,c:[26,55,112]}
+  ];
+  kpis.forEach(function(ki,j){
+    var x=10+j*kpiW;
+    doc.setFillColor(242,242,247);doc.roundedRect(x,kpiY,kpiW-3,kpiH,2,2,'F');
+    doc.setFillColor(ki.c[0],ki.c[1],ki.c[2]);doc.rect(x,kpiY,2,kpiH,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(28,28,30);
+    doc.text(String(ki.vl),x+(kpiW-3)/2,kpiY+9.5,{align:'center'});
+    doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(108,108,112);
+    doc.text(ki.lb,x+(kpiW-3)/2,kpiY+14,{align:'center'});
+  });
+
+  var y=kpiY+kpiH+6;
+  // cabeçalho da tabela
+  var cols=[
+    {h:'SKU',w:18,a:'left'},{h:'PRODUTO',w:74,a:'left'},
+    {h:'LASTRO',w:18,a:'center'},{h:'ESPER.',w:18,a:'center'},
+    {h:'CONT.',w:18,a:'center'},{h:'STATUS',w:0,a:'center'}
+  ];
+  var usedW=0; cols.forEach(function(c){usedW+=c.w;});
+  cols[cols.length-1].w=(pgW-18)-usedW; // status preenche o resto
+  var xC=9;
+  doc.setFillColor(28,28,30);doc.rect(xC,y,pgW-18,6.5,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(255,255,255);
+  var cx=xC;
+  cols.forEach(function(c){
+    var tx=c.a==='center'?cx+c.w/2:cx+2;
+    doc.text(c.h,tx,y+4.3,{align:c.a==='center'?'center':'left'});
+    cx+=c.w;
+  });
+  y+=6.5;
+
+  var maxY=pgH-14, pageNum=1;
+  function foot(){
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(150,150,160);
+    doc.text('Pág '+pageNum,pgW/2,pgH-5,{align:'center'});
+    doc.text('Validação de Pilhas — '+hoje+' — CD Matriz Panutrir',pgW/2,pgH-9,{align:'center'});
+  }
+
+  lista.forEach(function(r,rowIdx){
+    // altura: linha principal + linha de detalhe das contagens
+    var detalhe=r.conts.filter(function(c){return c.qtd!==''&&c.qtd!=null;})
+      .map(function(c){return (c.nm||'Cont')+': '+c.qtd;}).join('   |   ');
+    var hRow=8, hDet=detalhe?4.5:0;
+    if(y+hRow+hDet>maxY){foot();doc.addPage();pageNum++;y=14;}
+
+    var alt=rowIdx%2===0;
+    doc.setFillColor(alt?250:255,alt?250:255,alt?253:255);doc.rect(xC,y,pgW-18,hRow,'F');
+    // faixa de status na lateral
+    var stC=r.diff===0?[52,199,89]:[255,149,0];
+    doc.setFillColor(stC[0],stC[1],stC[2]);doc.rect(xC,y,2.5,hRow,'F');
+
+    var cx2=xC+3;
+    doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(26,55,112);
+    doc.text(String(r.cod),cx2+1,y+5);cx2+=18;
+    var nomeT=r.nome.length>44?r.nome.substring(0,43)+'…':r.nome;
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(28,28,30);
+    doc.text(nomeT,cx2+1,y+5);cx2+=74;
+    doc.setFontSize(7);
+    doc.text(String(r.lastro),cx2+9,y+5,{align:'center'});cx2+=18;
+    doc.setFont('helvetica','bold');
+    doc.text(String(r.esperado),cx2+9,y+5,{align:'center'});cx2+=18;
+    doc.text(String(r.contadas),cx2+9,y+5,{align:'center'});cx2+=18;
+    // badge status
+    var stW=cols[cols.length-1].w;
+    var lb,diffTxt;
+    if(r.diff===0){ lb='OK'; }
+    else { lb='DIV'; diffTxt=(r.diff<0?('FALTAM '+(-r.diff)):('SOBRAM '+r.diff)); }
+    var bw=r.diff===0?16:34;
+    var bx=cx2+(stW-bw)/2;
+    doc.setFillColor(stC[0],stC[1],stC[2]);doc.roundedRect(bx,y+1.7,bw,4.6,1.2,1.2,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(255,255,255);
+    doc.text(r.diff===0?lb:(lb+' '+diffTxt),bx+bw/2,y+4.8,{align:'center'});
+    y+=hRow;
+
+    // linha de detalhe das contagens
+    if(detalhe){
+      doc.setFillColor(248,248,251);doc.rect(xC,y,pgW-18,hDet,'F');
+      doc.setFont('helvetica','italic');doc.setFontSize(5.8);doc.setTextColor(120,120,130);
+      var dt=('Blocos:  '+detalhe);if(dt.length>140)dt=dt.substring(0,139)+'…';
+      doc.text(dt,xC+4,y+3.1);
+      y+=hDet;
+    }
+    doc.setDrawColor(242,242,247);doc.setLineWidth(0.2);doc.line(xC,y,xC+pgW-18,y);
+  });
+
+  foot();
+  var dt=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  doc.save('Validacao_Pilhas_'+dt+'.pdf');
+}
+
+// ═══════════════════════════════════════════════════════════════
 // BOOT
 // ═══════════════════════════════════════════════════════════════
 (function bootInicial(){
@@ -1957,6 +2453,8 @@ function montarQuebras(rows,fileName){
   });
 
   render();
+  montarPilhas(rows);
+  if(viewAtual==='pilhas') renderPilhas();
   setSyncStatus(navigator.onLine?'idle':'offline');
   pushDados();
   setTimeout(pushDados, 3000);
