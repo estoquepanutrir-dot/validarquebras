@@ -13,12 +13,22 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script>
+/* aplica o tema salvo antes da pintura para evitar "flash" */
+(function(){try{
+  var t=localStorage.getItem('tema');
+  if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches) t='dark';
+  if(t==='dark') document.documentElement.setAttribute('data-theme','dark');
+  else document.documentElement.setAttribute('data-theme','light');
+}catch(e){}})();
+</script>
 <style>
 /* ── Reset & Base ── */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
   --blue:#1A3770;
   --blue-mid:#2B4E9E;
+  --blue-text:#1A3770;
   --accent:#5856D6;
   --green:#34C759;
   --red:#FF3B30;
@@ -31,12 +41,74 @@
   --text:#1C1C1E;
   --text2:#636366;
   --text3:#AEAEB2;
+  /* chips / badges / superfícies semânticas */
+  --chip-bg:#EEF2FF;
+  --chip-bg-active:#DDE5FF;
+  --ok-bg:#E8FBF0;   --ok-tx:#1A7A3A;
+  --bad-bg:#FFEBEA;  --bad-tx:#C0251C;
+  --warn-bg:#FFF3E0; --warn-tx:#9C5A00;
+  --fant-bg:#FFFCF5;
+  --touched-bg:#FFFBEC;
+  --ftag-bg:#FFF0CC; --ftag-tx:#92480A;
+  --cmp-soft:#FFF5F4;
+  --glass-hdr:rgba(248,249,252,0.72);
+  --glass-bar:rgba(240,242,247,0.95);
+  --glass-nav:rgba(248,249,252,0.82);
+  --glass-modalhdr:rgba(248,249,252,0.85);
+  --glass-notif:rgba(255,255,255,0.82);
+  --soft-bg:rgba(0,0,0,0.05);
+  --soft-bg-2:rgba(0,0,0,0.1);
+  --soft-bd:rgba(0,0,0,.12);
+  --hairline:rgba(0,0,0,.10);
+  --pbar-track:rgba(0,0,0,.12);
+  --overlay:rgba(15,15,30,0.55);
   --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
   --shadow-md:0 4px 16px rgba(0,0,0,.10),0 2px 6px rgba(0,0,0,.07);
   --shadow-lg:0 10px 40px rgba(0,0,0,.18),0 4px 12px rgba(0,0,0,.10);
   --radius:14px;
   --radius-sm:9px;
   --radius-lg:20px;
+}
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --blue:#3B6FE0;
+  --blue-mid:#5B82D6;
+  --blue-text:#8FB3FF;
+  --accent:#7C7AF0;
+  --green:#32D74B;
+  --red:#FF453A;
+  --orange:#FF9F0A;
+  --yellow:#FFD60A;
+  --bg:#0E1117;
+  --surface:#171B23;
+  --surface2:#1F2530;
+  --border:#2C333F;
+  --text:#ECEEF2;
+  --text2:#A6AEBC;
+  --text3:#6E7787;
+  --chip-bg:rgba(94,138,235,0.18);
+  --chip-bg-active:rgba(94,138,235,0.30);
+  --ok-bg:rgba(50,215,75,0.16);   --ok-tx:#4ED77A;
+  --bad-bg:rgba(255,69,58,0.18);  --bad-tx:#FF7B72;
+  --warn-bg:rgba(255,159,10,0.18); --warn-tx:#FFC56B;
+  --fant-bg:#231F12;
+  --touched-bg:#231F10;
+  --ftag-bg:rgba(255,204,0,0.16); --ftag-tx:#F2C24B;
+  --cmp-soft:rgba(255,69,58,0.10);
+  --glass-hdr:rgba(18,22,29,0.78);
+  --glass-bar:rgba(14,17,23,0.92);
+  --glass-nav:rgba(18,22,29,0.82);
+  --glass-modalhdr:rgba(23,27,35,0.88);
+  --glass-notif:rgba(31,37,48,0.92);
+  --soft-bg:rgba(255,255,255,0.08);
+  --soft-bg-2:rgba(255,255,255,0.14);
+  --soft-bd:rgba(255,255,255,0.14);
+  --hairline:rgba(255,255,255,.10);
+  --pbar-track:rgba(255,255,255,.14);
+  --overlay:rgba(0,0,0,0.62);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.40),0 1px 2px rgba(0,0,0,.30);
+  --shadow-md:0 4px 16px rgba(0,0,0,.50),0 2px 6px rgba(0,0,0,.35);
+  --shadow-lg:0 10px 40px rgba(0,0,0,.60),0 4px 12px rgba(0,0,0,.45);
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);padding-bottom:calc(72px + env(safe-area-inset-bottom));color:var(--text)}
 
@@ -175,11 +247,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .cmp-btn{
   width:100%;display:flex;align-items:center;justify-content:center;gap:7px;
   padding:10px;border:1px dashed var(--red);border-radius:10px;
-  background:#FFF5F4;color:var(--red);
+  background:var(--cmp-soft);color:var(--red);
   font-size:12px;font-weight:800;cursor:pointer;
   transition:all .12s;
 }
-.cmp-btn:active{transform:scale(.98);background:#FFEBEA}
+.cmp-btn:active{transform:scale(.98);background:var(--bad-bg)}
 .cmp-btn svg{flex-shrink:0}
 /* relatório */
 .cmp-sum{
@@ -202,7 +274,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .cmp-row .mini-etq{flex-shrink:0}
 .cmp-row-nome{font-size:11px;color:var(--text2);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .cmp-row-tag{font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap;text-transform:uppercase}
-.cmp-row-tag.out{background:#E8FBF0;color:#1A7A3A}
+.cmp-row-tag.out{background:var(--ok-bg);color:var(--ok-tx)}
+/* já saíram: opacas (referência) */
+.cmp-row.saiu{opacity:.5}
+/* ainda no estoque: destacadas (ação pendente) */
+.cmp-row.fica{
+  background:var(--surface);border-color:var(--chip-bg-active);
+  box-shadow:0 1px 4px rgba(88,86,214,.08);
+}
+.cmp-row.fica .cmp-row-nome{color:var(--text)}
+/* etiqueta já consultada no histórico → verde */
+.mini-etq.visto{
+  background:var(--ok-bg)!important;color:var(--ok-tx)!important;
+}
+.mini-etq.visto::after{content:" ✓";font-size:10px}
 .cmp-empty{text-align:center;padding:40px 20px;color:var(--text2);font-size:13px}
 
 /* mini-card para validadas */
@@ -212,17 +297,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   background:var(--surface2);border-radius:10px;
   border:1px solid var(--border);
 }
-.mini-etq{font-size:12px;font-weight:800;color:var(--blue);background:#EEF2FF;padding:3px 8px;border-radius:6px;text-decoration:none;display:inline-block;transition:background .12s,transform .1s;flex-shrink:0}
+.mini-etq{font-size:12px;font-weight:800;color:var(--blue-text);background:var(--chip-bg);padding:3px 8px;border-radius:6px;text-decoration:none;display:inline-block;transition:background .12s,transform .1s;flex-shrink:0}
 a.mini-etq{cursor:pointer}
-a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
+a.mini-etq:active{background:var(--chip-bg-active);transform:scale(.94)}
 .mini-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .mini-nome{font-size:11px;color:var(--text2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .mini-by{font-size:9.5px;color:var(--text3);font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .mini-by b{font-weight:800;color:var(--text2)}
 .mini-st{font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap;text-transform:uppercase}
-.mini-st.pres{background:#E8FBF0;color:#1A7A3A}
-.mini-st.ause{background:#FFEBEA;color:#C0251C}
-.mini-st.corr{background:#FFF3E0;color:#9C5A00}
+.mini-st.pres{background:var(--ok-bg);color:var(--ok-tx)}
+.mini-st.ause{background:var(--bad-bg);color:var(--bad-tx)}
+.mini-st.corr{background:var(--warn-bg);color:var(--warn-tx)}
 .mini-undo{
   width:28px;height:28px;flex-shrink:0;
   background:var(--border);color:var(--text2);
@@ -243,7 +328,7 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
   transition:box-shadow .2s;
   position:relative;
 }
-.card.fant{border-left:4px solid var(--orange);background:#FFFCF5}
+.card.fant{border-left:4px solid var(--orange);background:var(--fant-bg)}
 .card.selecionado{box-shadow:0 0 0 2.5px var(--accent),var(--shadow-sm)}
 
 /* ── Animação iOS: card encolhe enquanto sobe para a aba ── */
@@ -314,8 +399,8 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
   border-bottom:0.5px solid rgba(0,0,0,.1);
 }
 .etq-modal-tag{
-  font-size:13px;font-weight:800;color:var(--blue);
-  background:#EEF2FF;padding:5px 11px;border-radius:7px;
+  font-size:13px;font-weight:800;color:var(--blue-text);
+  background:var(--chip-bg);padding:5px 11px;border-radius:7px;
   max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 .etq-modal-spacer{flex:1}
@@ -342,7 +427,7 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 }
 .etq-spinner{
   width:34px;height:34px;border-radius:50%;
-  border:3px solid var(--border);border-top-color:var(--blue);
+  border:3px solid var(--border);border-top-color:var(--blue-text);
   animation:etqSpin .8s linear infinite;margin-bottom:14px;
 }
 @keyframes etqSpin{to{transform:rotate(360deg)}}
@@ -395,7 +480,7 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 }
 .notif-card.show{opacity:1;transform:none}
 .notif-txt{flex:1}
-.notif-txt b{font-weight:800;color:var(--blue)}
+.notif-txt b{font-weight:800;color:var(--blue-text)}
 .notif-ico{
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
   width:24px;height:24px;border-radius:50%;
@@ -414,14 +499,14 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 }
 .chdr-left{display:flex;align-items:center;flex-wrap:wrap;gap:5px;flex:1;min-width:0}
 .etq-a{
-  font-size:13px;font-weight:800;color:var(--blue);
-  text-decoration:none;background:#EEF2FF;
+  font-size:13px;font-weight:800;color:var(--blue-text);
+  text-decoration:none;background:var(--chip-bg);
   padding:3px 9px;border-radius:7px;letter-spacing:.02em;
   white-space:nowrap;
 }
-.etq-a:hover{background:#DDE5FF}
+.etq-a:hover{background:var(--chip-bg-active)}
 .etq-s{font-size:13px;font-weight:800;color:var(--text2);background:var(--surface2);padding:3px 9px;border-radius:7px;white-space:nowrap}
-.ftag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;color:#92480A;background:#FFF0CC;padding:2px 7px;border-radius:6px}
+.ftag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;color:var(--ftag-tx);background:var(--ftag-bg);padding:2px 7px;border-radius:6px}
 .chdr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .card-sel-mark{display:none;align-items:center;justify-content:center;width:20px;height:20px;background:var(--accent);color:#fff;border-radius:50%;font-size:10px;font-weight:900;flex-shrink:0}
 .card.selecionado .card-sel-mark{display:flex}
@@ -463,7 +548,7 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 
 /* "by" info */
 .by-info{display:flex;align-items:center;gap:5px;margin-top:8px;padding:6px 10px;border-radius:8px;font-size:10px;font-weight:600}
-.by-info.by-outros{background:#EEF2FF;color:var(--accent)}
+.by-info.by-outros{background:var(--chip-bg);color:var(--accent)}
 .by-info.by-eu{background:var(--surface2);color:var(--text2)}
 .by-info b{font-weight:900}
 
@@ -478,6 +563,14 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 
 /* ── Empty / loading states ── */
 .no-res{text-align:center;padding:40px 20px;color:var(--text2);font-size:13px;font-weight:600}
+.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 24px;text-align:center}
+.loading-spin{
+  width:42px;height:42px;border-radius:50%;
+  border:3.5px solid var(--border);border-top-color:var(--blue-text);
+  animation:etqSpin .8s linear infinite;margin-bottom:18px;
+}
+.loading-txt{font-size:14px;font-weight:800;color:var(--text);margin-bottom:5px}
+.loading-sub{font-size:12px;color:var(--text2)}
 
 /* ── Modals ── */
 .modal-bg{
@@ -519,7 +612,7 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 .sum-total-vl{font-size:26px;font-weight:900;letter-spacing:-.02em}
 .sum-total-sub{font-size:11px;opacity:.85;margin-top:3px;font-weight:600}
 .sum-grp{background:var(--surface2);border-radius:11px;padding:12px;margin-bottom:8px}
-.sum-grp-nm{font-size:11px;font-weight:800;color:var(--blue);margin-bottom:6px;line-height:1.3}
+.sum-grp-nm{font-size:11px;font-weight:800;color:var(--blue-text);margin-bottom:6px;line-height:1.3}
 .sum-grp-info{font-size:10px;color:var(--text2);margin-bottom:6px;font-weight:600}
 .sum-grp-res{display:flex;gap:10px;align-items:center;background:var(--surface);border-radius:8px;padding:9px 11px}
 .sum-grp-res-it{flex:1;text-align:center}
@@ -566,62 +659,80 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
   display:flex;flex-direction:column;align-items:center;gap:3px;
   padding:6px 0;color:var(--text3);transition:color .15s;
 }
-.bnav-btn.active{color:var(--blue)}
+.bnav-btn.active{color:var(--blue-text)}
 .bnav-btn svg{width:22px;height:22px}
 .bnav-lb{font-size:10px;font-weight:800;letter-spacing:.01em}
 .view{display:none}
 .view.active{display:block}
 
 /* ── Pilhas view ── */
-.pilhas-wrap{padding:10px 12px 20px}
+.pilhas-wrap{padding:8px 10px 16px}
+.pilha-search-bar{
+  position:sticky;top:52px;z-index:96;
+  display:flex;gap:6px;align-items:center;margin:0 -10px 10px;padding:8px 10px;
+  background:rgba(240,242,247,0.95);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.pilha-search-bar .search-inp{flex:1;min-width:0}
 .pilhas-hdr-info{
-  font-size:11px;color:var(--text2);line-height:1.5;
-  background:var(--surface2);border-radius:11px;padding:11px 13px;margin-bottom:12px;
+  font-size:10.5px;color:var(--text2);line-height:1.45;
+  background:var(--surface2);border-radius:10px;padding:8px 11px;margin-bottom:10px;
 }
 .pilha-empty{text-align:center;padding:50px 20px;color:var(--text2);font-size:13px;line-height:1.6}
 .pilha-card{
   background:var(--surface);border-radius:var(--radius);
-  box-shadow:var(--shadow-sm);margin-bottom:12px;overflow:hidden;
+  box-shadow:var(--shadow-sm);margin-bottom:10px;overflow:hidden;
   border-left:4px solid var(--accent);
 }
 .pilha-card.done{border-left-color:var(--green);opacity:.72}
 .pilha-card.done.div{border-left-color:var(--orange)}
-.pilha-card-hd{padding:12px 14px 10px;display:flex;align-items:flex-start;gap:10px}
+.pilha-card.touched{background:var(--touched-bg);border-left-color:var(--yellow)}
+.validated-toggle-icon.diverg{background:linear-gradient(135deg,var(--orange),#FFB340);box-shadow:0 2px 6px rgba(255,149,0,.35)}
+.validated-toggle-count.diverg{background:var(--orange)}
+.pilha-card-hd{padding:10px 12px 8px;display:flex;align-items:center;gap:10px}
 .pilha-card-nm{flex:1;min-width:0}
-.pilha-card-prod{font-size:13px;font-weight:800;color:var(--text);line-height:1.3;margin-bottom:3px}
+.pilha-card-prod{font-size:13.5px;font-weight:800;color:var(--text);line-height:1.25;margin-bottom:3px}
 .pilha-card-meta{font-size:10px;color:var(--text3);font-weight:600}
 .pilha-card-meta b{color:var(--text2)}
-.pilha-esp{text-align:center;background:var(--surface2);border-radius:10px;padding:7px 11px;flex-shrink:0}
-.pilha-esp-vl{font-size:20px;font-weight:900;color:var(--blue);line-height:1}
-.pilha-esp-lb{font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
-.cont-list{padding:0 14px}
-.cont-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.pilha-esp{text-align:center;background:var(--chip-bg);border-radius:11px;padding:6px 13px;flex-shrink:0;min-width:58px}
+.pilha-esp-vl{font-size:30px;font-weight:900;color:var(--blue-text);line-height:1;letter-spacing:-.02em}
+.pilha-esp-lb{font-size:7.5px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin-top:1px}
+.cont-list{padding:2px 12px 0;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.cont-cell{
+  position:relative;display:flex;flex-direction:column;gap:3px;
+  border:1.5px solid var(--border);border-radius:11px;background:var(--surface2);
+  padding:6px 8px 7px;transition:border-color .15s,background .15s;
+}
+.cont-cell:focus-within{border-color:var(--accent);background:var(--surface)}
+.cont-cell.solo{grid-column:1 / -1}
+.cont-cell-top{display:flex;align-items:center;gap:4px}
 .cont-nm{
-  flex:1;min-width:0;border:1.5px solid var(--border);border-radius:9px;
-  padding:9px 11px;font-size:12px;font-weight:700;color:var(--text);
-  outline:none;background:var(--surface2);transition:border-color .15s;
+  flex:1;min-width:0;border:none;background:none;outline:none;
+  font-size:10.5px;font-weight:800;color:var(--text2);padding:0 1px;
 }
-.cont-nm:focus{border-color:var(--accent);background:#fff}
+.cont-nm::placeholder{color:var(--text3)}
 .cont-qtd{
-  width:74px;border:1.5px solid var(--border);border-radius:9px;
-  padding:9px 8px;font-size:15px;font-weight:800;text-align:center;color:var(--blue);
-  outline:none;transition:border-color .15s;
+  width:100%;border:none;background:none;outline:none;
+  font-size:24px;font-weight:900;text-align:center;color:var(--blue-text);
+  padding:0;-moz-appearance:textfield;
 }
-.cont-qtd:focus{border-color:var(--accent)}
+.cont-qtd::-webkit-outer-spin-button,.cont-qtd::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.cont-qtd::placeholder{color:var(--text3);font-weight:800}
 .cont-del{
-  width:30px;height:30px;flex-shrink:0;border:none;border-radius:8px;
-  background:var(--surface2);color:var(--text3);font-size:16px;cursor:pointer;
+  width:22px;height:22px;flex-shrink:0;border:none;border-radius:7px;
+  background:rgba(0,0,0,.05);color:var(--text3);font-size:14px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;transition:all .12s;
 }
 .cont-del:active{transform:scale(.88);background:#FFE5E5;color:var(--red)}
 .pilha-add{
-  display:inline-flex;align-items:center;gap:5px;
-  background:none;border:1.5px dashed var(--border);border-radius:9px;
-  padding:7px 13px;font-size:11px;font-weight:800;color:var(--accent);
-  cursor:pointer;margin:2px 0 10px;transition:all .12s;
+  display:flex;align-items:center;justify-content:center;gap:5px;width:calc(100% - 24px);
+  background:none;border:1.5px dashed var(--border);border-radius:10px;
+  padding:8px 13px;font-size:11.5px;font-weight:800;color:var(--accent);
+  cursor:pointer;margin:0 12px 10px;transition:all .12s;
 }
-.pilha-add:active{transform:scale(.96);background:var(--surface2)}
-.pilha-foot{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface2)}
+.pilha-add:active{transform:scale(.98);background:var(--surface2)}
+.pilha-foot{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2)}
 .pilha-soma{flex:1}
 .pilha-soma-vl{font-size:19px;font-weight:900;color:var(--text);line-height:1}
 .pilha-soma-vl.ok{color:var(--green)}
@@ -640,6 +751,129 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 .pilha-validated-tag.div{color:var(--orange)}
 .btn-undo-pilha{background:none;border:none;color:var(--text3);font-size:11px;font-weight:700;cursor:pointer;text-decoration:underline;padding:4px}
 
+/* ── Texto do horário de importação ── */
+.import-info{
+  text-align:center;font-size:10.5px;font-weight:600;color:var(--text3);
+  padding:5px 12px 3px;background:var(--bg);line-height:1.3;
+}
+.import-info b{color:var(--text2);font-weight:800}
+
+/* ════════════════════════════════════════════════
+   TEMA ESCURO — superfícies translúcidas (glass) e bordas
+   (o resto do tema vem das variáveis em html[data-theme="dark"])
+   ════════════════════════════════════════════════ */
+html[data-theme="dark"] .hdr{
+  background:var(--glass-hdr);
+  border-bottom:0.5px solid var(--hairline);
+  box-shadow:0 1px 14px rgba(0,0,0,.5);
+}
+html[data-theme="dark"] .search-bar,
+html[data-theme="dark"] .pilha-search-bar{
+  background:var(--glass-bar);border-bottom:1px solid var(--border);
+}
+html[data-theme="dark"] .bottom-nav{
+  background:var(--glass-nav);border-top:1px solid var(--border);
+}
+html[data-theme="dark"] .pbar-bg{background:var(--pbar-track)}
+html[data-theme="dark"] .hdr-btn-import,
+html[data-theme="dark"] .hdr-btn-user,
+html[data-theme="dark"] .btn-theme{
+  background:var(--soft-bg);border:0.5px solid var(--soft-bd);color:var(--text);
+}
+html[data-theme="dark"] .etq-modal-hdr{
+  background:var(--glass-modalhdr);border-bottom:0.5px solid var(--hairline);
+}
+html[data-theme="dark"] .etq-modal-ext,
+html[data-theme="dark"] .etq-modal-close{
+  background:var(--soft-bg);border:0.5px solid var(--soft-bd);color:var(--text2);
+}
+html[data-theme="dark"] .etq-modal-body,
+html[data-theme="dark"] .etq-frame,
+html[data-theme="dark"] .etq-loader,
+html[data-theme="dark"] .etq-blocked{background:var(--surface)}
+html[data-theme="dark"] .notif-card{background:var(--glass-notif);border:0.5px solid var(--hairline)}
+html[data-theme="dark"] .modal{border:1px solid var(--hairline)}
+html[data-theme="dark"] .cont-del{background:var(--soft-bg)}
+html[data-theme="dark"] .mini-undo,
+html[data-theme="dark"] .modal-close{background:var(--surface2)}
+html[data-theme="dark"] .btn-srch-clr{background:var(--surface2);border-color:var(--border)}
+
+/* ── Botão de tema (lua/sol) no cabeçalho ── */
+.btn-theme{
+  display:flex;align-items:center;justify-content:center;
+  width:32px;height:32px;padding:0;border-radius:8px;flex-shrink:0;
+  background:var(--soft-bg);color:var(--text);
+  border:0.5px solid var(--soft-bd);cursor:pointer;transition:all .15s ease;
+}
+.btn-theme:active{transform:scale(.9)}
+.btn-theme svg{width:17px;height:17px}
+
+/* ── Cabeçalho mais compacto p/ caber todos os botões ── */
+.hdr{gap:6px}
+.hdr-actions{gap:5px}
+.hdr-btn{height:32px;padding:0 9px;font-size:11px}
+.hdr-btn-icon{width:32px;padding:0}
+.hdr-title{font-size:13px}
+@media(max-width:400px){
+  .hdr{padding:0 10px;gap:5px}
+  .hdr-actions{gap:4px}
+  .hdr-btn{height:30px;padding:0 7px;font-size:10.5px}
+  .hdr-btn-pdf span.lbl{display:none}      /* PDF vira só ícone */
+  .btn-theme,.hdr-btn-icon{width:30px;height:30px}
+  .hdr-title{font-size:12px}
+  .hdr-count{font-size:9px}
+  #btnNome{max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+
+/* ── Conferir histórico das ausentes ── */
+.hc-btn{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:10px;border:1px dashed var(--accent);border-radius:10px;
+  background:var(--chip-bg);color:var(--accent);
+  font-size:12px;font-weight:800;cursor:pointer;margin-bottom:8px;
+  transition:all .12s;
+}
+.hc-btn:active{transform:scale(.98)}
+.hc-btn svg{flex-shrink:0}
+.hc-hint{font-size:11px;color:var(--text2);line-height:1.45;background:var(--surface2);border-radius:10px;padding:10px 12px;margin:14px 14px 12px}
+.hc-hint b{color:var(--text)}
+.hc-row{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 12px;background:var(--surface2);
+  border:1.5px solid var(--border);border-radius:12px;margin-bottom:8px;
+  cursor:pointer;transition:background-color .15s,border-color .15s,transform .1s;
+}
+.hc-row:active{transform:scale(.99)}
+.hc-row.done{background:var(--ok-bg);border-color:var(--green)}
+.hc-check{
+  width:25px;height:25px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--text3);background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  color:transparent;font-size:13px;font-weight:900;transition:all .15s;
+}
+.hc-row.done .hc-check{background:var(--green);border-color:var(--green);color:#fff}
+.hc-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.hc-etq{font-size:13px;font-weight:800;color:var(--blue-text);text-decoration:none;display:inline-block;align-self:flex-start;border-bottom:1.5px dotted currentColor;cursor:pointer}
+a.hc-etq:active{opacity:.6}
+.hc-row.done .hc-etq{color:var(--ok-tx)}
+.hc-nome{font-size:10.5px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hc-open{
+  flex-shrink:0;width:36px;height:36px;border-radius:9px;text-decoration:none;
+  background:var(--soft-bg);border:0.5px solid var(--soft-bd);color:var(--text2);
+  display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;
+  transition:all .12s;
+}
+.hc-open:active{transform:scale(.9);background:var(--soft-bg-2)}
+.hc-empty{text-align:center;padding:36px 20px;color:var(--text2);font-size:13px}
+
+/* ── Polimento moderno ── */
+.card,.pilha-card{transition:box-shadow .2s ease,transform .12s ease}
+.btn-valpilha{box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.btn-valpilha:hover{filter:brightness(1.06)}
+.sum-btn,.hdr-btn-pdf{box-shadow:0 2px 8px rgba(0,0,0,.10)}
+.cont-cell{transition:box-shadow .15s ease}
+.cont-cell:focus-within{box-shadow:0 0 0 3px rgba(88,86,214,.14)}
+
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
 }
@@ -654,7 +888,9 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
     <span id="ptxt" class="hdr-count">0/0</span>
     <div class="hdr-actions">
       <span id="syncDot" class="sync-dot" title="Sincronizado" onclick="forcarSync()"></span>
-      <button class="hdr-btn hdr-btn-pdf" onclick="gerarPDF()" title="Gerar PDF">📄 PDF</button>
+      <button id="btnTheme" class="btn-theme" onclick="toggleTema()" title="Alternar tema" aria-label="Alternar tema claro/escuro"></button>
+      <button class="hdr-btn hdr-btn-pdf" onclick="gerarPDF()" title="Gerar PDF">📄 <span class="lbl">PDF</span></button>
+      <button id="btnHist" class="hdr-btn hdr-btn-user" onclick="abrirHistorico()" title="Histórico de importações" style="position:relative">🕐<span id="histBadge" style="display:none;position:absolute;top:-3px;right:-3px;background:var(--accent);color:#fff;font-size:8px;font-weight:800;min-width:14px;height:14px;border-radius:7px;padding:0 3px;align-items:center;justify-content:center"></span></button>
       <button id="btnImport" class="hdr-btn hdr-btn-import" onclick="reimportar()" title="Importar planilha" style="display:none">📂</button>
       <button id="btnQR" onclick="abrirScanner()" class="hdr-btn hdr-btn-user" title="Ler QR da etiqueta"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h.01M21 21v.01M17.5 21H21v-3.5"/></svg></button>
       <button id="btnNome" onclick="mudarNome()" class="hdr-btn hdr-btn-user">👤</button>
@@ -663,6 +899,9 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 
   <!-- PROGRESS BAR -->
   <div class="pbar-bg"><div class="pbar" id="pbar"></div></div>
+
+  <!-- HORÁRIO DA IMPORTAÇÃO -->
+  <div id="importInfo" class="import-info" style="display:none"></div>
 
   <!-- ════════ VIEW: QUEBRAS ════════ -->
   <div id="viewQuebras" class="view active">
@@ -699,6 +938,10 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
     </button>
     <div id="absentBody" class="validated-body">
       <div class="absent-tools">
+        <button class="hc-btn" onclick="abrirHistConf()" title="Marcar as ausentes cujo histórico você já conferiu">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+          Conferir histórico das ausentes
+        </button>
         <button class="cmp-btn" onclick="compararPlanilha()" title="Subir outra planilha para ver quais ausentes já saíram">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Comparar com outra planilha
@@ -716,7 +959,13 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
   <div id="viewPilhas" class="view">
     <div class="pilhas-wrap">
       <div class="pilhas-hdr-info">
-        <b>Validação de pilhas.</b> Cada SKU mostra quantas pilhas cheias existem no estoque (etiquetas com a quantidade igual ao lastro). Conte os blocos do estoque usando o botão <b>+</b> e valide. Se a soma não bater, você pode validar com divergência.
+        <b>Pilhas cheias por SKU</b> (etiquetas com qtd = lastro). Conte os blocos do estoque, some e <b>valide</b>. Use <b>＋</b> para mais blocos.
+      </div>
+      <div class="pilha-search-bar">
+        <form autocomplete="off" style="display:contents" onsubmit="return false">
+        <input id="srchPilha" class="search-inp" type="text" placeholder="🔍  Buscar SKU ou produto..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" oninput="filtrarPilhas(this.value)"/>
+        </form>
+        <button class="btn-srch-clr" onclick="limparBuscaPilha()">Limpar</button>
       </div>
       <div id="pilhasInner"></div>
     </div>
@@ -735,6 +984,32 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
   </div>
 </div>
 
+<!-- MODAL: Aviso de reimportação -->
+<div id="reimportModal" style="display:none;position:fixed;inset:0;background:rgba(15,15,30,0.6);z-index:320;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(10px)">
+  <div style="background:var(--surface);border-radius:20px;padding:22px;max-width:360px;width:100%;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="font-size:16px;font-weight:900;color:var(--blue-text);text-align:center">🕐 Nova importação</div>
+    <div style="font-size:13px;color:var(--text2);text-align:center;line-height:1.5">
+      A conferência atual (validadas e ausentes) será <b>salva no histórico</b> com a hora de agora.<br><br>
+      Você poderá baixar o PDF dela depois, no botão 🕐.
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="cancelarReimport()" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--surface2);color:var(--text);font-size:13px;font-weight:800;cursor:pointer">Cancelar</button>
+      <button onclick="confirmarReimport()" style="flex:1.4;padding:12px;border:none;border-radius:10px;background:var(--blue);color:#fff;font-size:13px;font-weight:800;cursor:pointer">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Histórico de importações -->
+<div id="histModal" class="etq-modal-bg" onclick="if(event.target===this)fecharHistorico()">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-hdr">
+      <h2>🕐 Histórico de importações</h2>
+      <button class="modal-close" onclick="fecharHistorico()">×</button>
+    </div>
+    <div id="histBody" class="modal-body"></div>
+  </div>
+</div>
+
 <!-- FILE INPUT -->
 <input type="file" id="fileInputGlobal" accept=".xlsx,.xls,.csv" style="display:none" onchange="processarArquivo(this.files[0])"/>
 <input type="file" id="fileInputCompare" accept=".xlsx,.xls,.csv" style="display:none" onchange="processarComparacao(this.files[0])"/>
@@ -750,6 +1025,23 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
     </div>
     <div class="etq-modal-body" style="overflow-y:auto;-webkit-overflow-scrolling:touch">
       <div id="cmpResultado" style="padding:14px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Conferir histórico das ausentes -->
+<div id="histConfModal" class="etq-modal-bg">
+  <div class="etq-modal">
+    <div class="etq-modal-hdr">
+      <span class="etq-modal-tag">🕵 Conferir histórico</span>
+      <span class="etq-modal-spacer"></span>
+      <span id="hcProgress" style="font-size:11px;font-weight:800;color:var(--text2);margin-right:8px;white-space:nowrap"></span>
+      <button id="hcResetBtn" class="etq-modal-ext" onclick="limparHistConf()" title="Desmarcar todas">Limpar</button>
+      <button class="etq-modal-close" onclick="fecharHistConf()" title="Fechar">×</button>
+    </div>
+    <div class="etq-modal-body" style="overflow-y:auto;-webkit-overflow-scrolling:touch">
+      <div class="hc-hint">Toque numa etiqueta para marcá-la como <b>histórico já conferido</b>. Use o <b>↗</b> para abrir a etiqueta no inFlow.</div>
+      <div id="hcLista" style="padding:0 14px 16px"></div>
     </div>
   </div>
 </div>
@@ -786,7 +1078,7 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
     </div>
     <div class="etq-modal-body" style="background:#000">
       <div id="qrReader" style="width:100%;height:100%"></div>
-      <div id="qrErr" class="etq-blocked" style="display:none;background:#fff">
+      <div id="qrErr" class="etq-blocked" style="display:none;background:var(--surface)">
         <div style="font-size:38px;margin-bottom:12px">📷</div>
         <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:6px">Câmera indisponível</div>
         <div id="qrErrMsg" style="font-size:12px;color:var(--text2);line-height:1.55;max-width:300px;margin:0 auto"></div>
@@ -809,8 +1101,8 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 
 <!-- MODAL: Seleção de usuário -->
 <div id="nomeModal" style="display:none;position:fixed;inset:0;background:rgba(15,15,30,0.6);z-index:300;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(10px)">
-  <div style="background:#fff;border-radius:20px;padding:22px;max-width:340px;width:100%;display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
-    <div style="font-size:17px;font-weight:900;color:var(--blue);text-align:center;margin-bottom:2px">Quem é você?</div>
+  <div style="background:var(--surface);border-radius:20px;padding:22px;max-width:340px;width:100%;display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="font-size:17px;font-weight:900;color:var(--blue-text);text-align:center;margin-bottom:2px">Quem é você?</div>
     <button onclick="selecionarUsuario('Cosme')" class="modal-user-btn modal-user-btn-main">👑 Cosme (Admin)</button>
     <button onclick="selecionarUsuario('Anderson')" class="modal-user-btn modal-user-btn-sec">📋 Anderson</button>
     <div style="font-size:11px;color:var(--text3);text-align:center;margin:2px 0">ou entre como convidado:</div>
@@ -823,9 +1115,9 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 
 <!-- MODAL: Senha Admin -->
 <div id="senhaModal" style="display:none;position:fixed;inset:0;background:rgba(15,15,30,0.6);z-index:310;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(10px)">
-  <div style="background:#fff;border-radius:20px;padding:22px;max-width:320px;width:100%;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
-    <div style="font-size:15px;font-weight:900;color:var(--blue);text-align:center">🔒 Senha do Admin</div>
-    <div style="font-size:12px;color:var(--text2);text-align:center;line-height:1.4">Digite a senha para liberar a importação de planilhas.</div>
+  <div style="background:var(--surface);border-radius:20px;padding:22px;max-width:320px;width:100%;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div id="senhaTitulo" style="font-size:15px;font-weight:900;color:var(--blue-text);text-align:center">🔒 Senha do Admin</div>
+    <div id="senhaDesc" style="font-size:12px;color:var(--text2);text-align:center;line-height:1.4">Digite a senha para liberar a importação de planilhas.</div>
     <input id="senhaInput" type="password" placeholder="Senha..." style="border:1.5px solid var(--border);border-radius:10px;padding:12px;font-size:14px;text-align:center;outline:none" onkeydown="if(event.key==='Enter')confirmarSenhaAdmin()"/>
     <div style="display:flex;gap:8px">
       <button onclick="fecharSenhaModal()" style="flex:1;padding:12px;border:none;border-radius:10px;background:var(--surface2);color:var(--text);font-size:13px;font-weight:800;cursor:pointer">Só conferir</button>
@@ -839,8 +1131,53 @@ a.mini-etq:active{background:#DDE5FF;transform:scale(.94)}
 var dados = [];
 var ME = '';
 var isAdmin = false;
+var podeImportarPlanilha = false;
 var _validatedOpen = false;
 var _absentOpen = false;
+var _buscandoDados = false;  // true enquanto a 1ª busca de dados na nuvem não terminou
+
+// ── Tema claro / escuro ──
+var ICON_MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+var ICON_SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>';
+function _temaAtual(){ return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light'; }
+function aplicarTema(t){
+  var dark = (t==='dark');
+  document.documentElement.setAttribute('data-theme', dark?'dark':'light');
+  try{ localStorage.setItem('tema', dark?'dark':'light'); }catch(e){}
+  var btn=document.getElementById('btnTheme');
+  if(btn){ btn.innerHTML = dark?ICON_SUN:ICON_MOON; btn.title = dark?'Mudar para tema claro':'Mudar para tema escuro'; }
+  var meta=document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', dark?'#12161D':'#F8F9FC');
+  // as cores por SKU dependem do tema → limpa cache e re-renderiza
+  _corSkuCache={};
+  try{ render(); }catch(e){}
+  try{ if(viewAtual==='pilhas') renderPilhas(); }catch(e){}
+}
+function toggleTema(){ aplicarTema(_temaAtual()==='dark'?'light':'dark'); }
+function _initTema(){ aplicarTema(_temaAtual()); }
+var _importTs = 0;           // horário (ms) da importação da planilha atual
+
+function _setImportTs(ts){
+  ts = Number(ts)||0;
+  if(ts>0){
+    _importTs = ts;
+    try{ localStorage.setItem('imp_ts_'+_dataKey(), String(_importTs)); }catch(e){}
+    _atualizarImportInfo();
+  }
+}
+function _restaurarImportTs(){
+  try{ var v=Number(localStorage.getItem('imp_ts_'+_dataKey()))||0; if(v>0){ _importTs=v; _atualizarImportInfo(); } }catch(e){}
+}
+function _atualizarImportInfo(){
+  var el = document.getElementById('importInfo');
+  if(!el) return;
+  if(!_importTs){ el.style.display='none'; return; }
+  var d = new Date(_importTs);
+  var data = d.toLocaleDateString('pt-BR');
+  var hora = d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  el.innerHTML = '📥 Planilha importada em <b>'+data+'</b> às <b>'+hora+'</b>';
+  el.style.display = 'block';
+}
 
 // ── Validated panel toggle ──
 function toggleValidated(){
@@ -858,6 +1195,76 @@ function toggleAbsent(){
   if(arrow) arrow.classList.toggle('open', _absentOpen);
 }
 
+// ── Conferir histórico das ausentes (checklist verde) ──
+var SKHC = 'hist_conf_' + _dataKey();
+var _histConf = {};
+try{ _histConf = JSON.parse(localStorage.getItem(SKHC) || '{}'); }catch(e){ _histConf = {}; }
+function _saveHistConf(){ try{ localStorage.setItem(SKHC, JSON.stringify(_histConf)); }catch(e){} }
+
+function _ausentesList(){
+  var arr=[];
+  for(var i=0;i<dados.length;i++){
+    var it=dados[i], est=E[it.k]||{};
+    if(est.status==='ause') arr.push({item:it, est:est});
+  }
+  // mais recentes primeiro
+  arr.sort(function(a,b){ return ((b.est&&b.est.ts)||0)-((a.est&&a.est.ts)||0); });
+  return arr;
+}
+
+function abrirHistConf(){
+  var aus=_ausentesList();
+  if(!aus.length){ alert('Não há etiquetas ausentes para conferir o histórico.'); return; }
+  renderHistConf();
+  var bg=document.getElementById('histConfModal');
+  if(bg){ bg.classList.add('show'); document.body.style.overflow='hidden'; }
+}
+function fecharHistConf(){
+  var bg=document.getElementById('histConfModal');
+  if(bg) bg.classList.remove('show');
+  document.body.style.overflow='';
+}
+function toggleHistConf(key){
+  if(_histConf[key]) delete _histConf[key]; else _histConf[key]=Date.now();
+  _saveHistConf();
+  renderHistConf();
+}
+function limparHistConf(){
+  if(!confirm('Desmarcar todas as etiquetas conferidas?')) return;
+  _histConf={}; _saveHistConf(); renderHistConf();
+}
+function renderHistConf(){
+  var aus=_ausentesList();
+  var el=document.getElementById('hcLista');
+  if(!el) return;
+  if(!aus.length){ el.innerHTML='<div class="hc-empty">Nenhuma etiqueta ausente.</div>'; }
+  var feitos=0, html='';
+  aus.forEach(function(reg){
+    var it=reg.item;
+    var done=!!_histConf[it.k];
+    if(done) feitos++;
+    var hasL=it.etiqueta && it.etiqueta!=='-';
+    var ifu='https://inflow.tec.br/view_etiqueta?e='+encodeURIComponent(it.etiqueta);
+    var etqEsc=String(it.etiqueta).replace(/"/g,'&quot;');
+    var keyEsc=String(it.k).replace(/'/g,"\\'");
+    html+='<div class="hc-row'+(done?' done':'')+'" onclick="toggleHistConf(\''+keyEsc+'\')">'+
+      '<div class="hc-check">✓</div>'+
+      '<div class="hc-mid">'+
+        (hasL
+          ? '<a class="hc-etq" href="'+ifu+'" data-etqurl="'+ifu+'" data-etqtag="'+etqEsc+'" onclick="event.stopPropagation();abrirEtq(event,this)" title="Abrir etiqueta no inFlow">'+it.etiqueta+'</a>'
+          : '<span class="hc-etq" style="border:none">'+it.etiqueta+'</span>')+
+        '<span class="hc-nome">'+it.nome+' · '+it.data+'</span>'+
+      '</div>'+
+      (hasL
+        ? '<a class="hc-open" href="'+ifu+'" data-etqurl="'+ifu+'" data-etqtag="'+etqEsc+'" onclick="event.stopPropagation();abrirEtq(event,this)" title="Abrir etiqueta no inFlow">↗</a>'
+        : '')+
+    '</div>';
+  });
+  el.innerHTML = html || '<div class="hc-empty">Nenhuma etiqueta ausente.</div>';
+  var prog=document.getElementById('hcProgress');
+  if(prog) prog.textContent = feitos+'/'+aus.length+' conferidas';
+}
+
 // ── Gerenciamento de usuário ──
 function selecionarUsuario(nome){
   nome = (nome || '').trim();
@@ -865,10 +1272,17 @@ function selecionarUsuario(nome){
   var m = document.getElementById('nomeModal');
   if(m) m.style.display = 'none';
 
-  if(nome === 'Cosme'){
+  if(nome === 'Cosme' || nome === 'Anderson'){
+    window._nomeAdmin = nome;
+    var ehAdmin = (nome === 'Cosme');
+    var tit = document.getElementById('senhaTitulo');
+    var desc = document.getElementById('senhaDesc');
+    if(tit) tit.textContent = ehAdmin ? '🔒 Senha do Admin' : '🔒 Senha — Anderson';
+    if(desc) desc.textContent = ehAdmin
+      ? 'Digite a senha para entrar como administrador.'
+      : 'Digite a senha do Anderson para entrar.';
     var sm = document.getElementById('senhaModal');
     if(sm){ sm.style.display = 'flex'; setTimeout(function(){ var si=document.getElementById('senhaInput'); if(si)si.focus(); },100); }
-    window._nomeAdmin = nome;
   } else {
     _aplicarUsuario(nome, false);
   }
@@ -878,12 +1292,19 @@ function confirmarSenhaAdmin(){
   var inp = document.getElementById('senhaInput');
   var err = document.getElementById('senhaErro');
   var senha = inp ? inp.value : '';
-  if(senha === 'panutrir2024' || senha === 'admin'){
+  var nome = window._nomeAdmin || 'Cosme';
+  var ok = false, admin = false, podeImportar = false;
+  if(nome === 'Cosme' && (senha === 'panutrir2024' || senha === 'admin')){
+    ok = true; admin = true;
+  } else if(nome === 'Anderson' && senha === 'and1234'){
+    ok = true; podeImportar = true;
+  }
+  if(ok){
     if(err) err.style.display = 'none';
     var sm = document.getElementById('senhaModal');
     if(sm) sm.style.display = 'none';
     if(inp) inp.value = '';
-    _aplicarUsuario(window._nomeAdmin || 'Cosme', true);
+    _aplicarUsuario(nome, admin, podeImportar);
   } else {
     if(err) err.style.display = 'block';
   }
@@ -896,18 +1317,24 @@ function fecharSenhaModal(){
   if(inp) inp.value = '';
   var err = document.getElementById('senhaErro');
   if(err) err.style.display = 'none';
+  // "Só conferir" → entra com o nome escolhido, somente leitura (sem importar)
   _aplicarUsuario(window._nomeAdmin || 'Cosme', false);
 }
 
-function _aplicarUsuario(nome, admin){
+function _aplicarUsuario(nome, admin, podeImportar){
   ME = nome;
   isAdmin = admin;
+  // quem pode importar: admin OU usuário explicitamente autorizado (ex: Anderson)
+  podeImportarPlanilha = admin || !!podeImportar;
   try{ localStorage.setItem('estoquista_nome', nome); }catch(e){}
   try{ localStorage.setItem('is_admin', admin ? '1' : '0'); }catch(e){}
+  try{ localStorage.setItem('pode_importar', podeImportarPlanilha ? '1' : '0'); }catch(e){}
   var bn = document.getElementById('btnNome');
-  if(bn) bn.textContent = (isAdmin ? '👑' : '👤') + ' ' + ME;
+  if(bn) bn.textContent = (isAdmin ? '👑' : (podeImportarPlanilha ? '📋' : '👤')) + ' ' + ME;
   var bi = document.getElementById('btnImport');
-  if(bi) bi.style.display = isAdmin ? 'inline-flex' : 'none';
+  if(bi) bi.style.display = podeImportarPlanilha ? 'inline-flex' : 'none';
+  if(dados.length===0) _buscandoDados = true;
+  _restaurarImportTs();
   render(); prog();
   setTimeout(function(){
     try{ iniciarSync(); }catch(e){}
@@ -919,7 +1346,8 @@ function _aplicarUsuario(nome, admin){
 function mudarNome(){
   try{ localStorage.removeItem('estoquista_nome'); }catch(e){}
   try{ localStorage.removeItem('is_admin'); }catch(e){}
-  ME = ''; isAdmin = false;
+  try{ localStorage.removeItem('pode_importar'); }catch(e){}
+  ME = ''; isAdmin = false; podeImportarPlanilha = false;
   var m = document.getElementById('nomeModal');
   if(m){ m.style.display = 'flex'; }
   var bi = document.getElementById('btnImport');
@@ -957,6 +1385,32 @@ try { P = JSON.parse(localStorage.getItem(SKP) || '{}'); } catch(e) {}
 try { pilhasDB = JSON.parse(localStorage.getItem(SKPDB) || '[]'); } catch(e) { pilhasDB = []; }
 try { rowsRaw = JSON.parse(localStorage.getItem(SKROWS) || '[]'); } catch(e) { rowsRaw = []; }
 var viewAtual = 'quebras';
+var filtroPilhas = '';
+var _pilhasValOpen = false;
+var _pilhasDivOpen = false;
+
+function togglePilhasValidated(){
+  _pilhasValOpen = !_pilhasValOpen;
+  var body = document.getElementById('pilhaValBody');
+  var arrow = document.getElementById('pilhaValArrow');
+  if(body) body.classList.toggle('open', _pilhasValOpen);
+  if(arrow) arrow.classList.toggle('open', _pilhasValOpen);
+}
+function togglePilhasDivergente(){
+  _pilhasDivOpen = !_pilhasDivOpen;
+  var body = document.getElementById('pilhaDivBody');
+  var arrow = document.getElementById('pilhaDivArrow');
+  if(body) body.classList.toggle('open', _pilhasDivOpen);
+  if(arrow) arrow.classList.toggle('open', _pilhasDivOpen);
+}
+
+function filtrarPilhas(v){ filtroPilhas = v || ''; renderPilhas(); }
+function limparBuscaPilha(){
+  filtroPilhas = '';
+  var si=document.getElementById('srchPilha');
+  if(si) si.value='';
+  renderPilhas();
+}
 
 function _savePilhas(){ try{ localStorage.setItem(SKP, JSON.stringify(P)); }catch(e){} }
 function _saveRowsRaw(){ try{ localStorage.setItem(SKROWS, JSON.stringify(rowsRaw)); }catch(e){} }
@@ -983,6 +1437,9 @@ function trocarView(v){
     pdfBtn.setAttribute('onclick', v==='pilhas' ? 'gerarPDFPilhas()' : 'gerarPDF()');
     pdfBtn.title = v==='pilhas' ? 'Gerar PDF de pilhas' : 'Gerar PDF de quebras';
   }
+  // QR só faz sentido nas quebras → some nas pilhas (libera espaço no cabeçalho)
+  var qrBtn = document.getElementById('btnQR');
+  if(qrBtn) qrBtn.style.display = (v==='pilhas') ? 'none' : 'inline-flex';
   if(v==='pilhas'){
     if((!pilhasDB || !pilhasDB.length) && rowsRaw && rowsRaw.length){ _reconstruirPilhas(); _ensurePilhaState(); _savePilhasDB(); }
     renderPilhas();
@@ -1034,6 +1491,14 @@ function _somaPilha(cod){
   return st.conts.reduce(function(s,c){ var v=parseInt(c.qtd,10); return s+(isNaN(v)?0:v); },0);
 }
 
+// marca autor + timestamp numa pilha e dispara sincronização para a nuvem
+function _touchPilha(cod){
+  var st=P[cod]; if(!st) return;
+  st.ts=Date.now(); st.by=ME||'?';
+  _savePilhas();
+  cloudPushPilhasDebounced();
+}
+
 function renderPilhas(){
   var el=document.getElementById('pilhasInner');
   if(!el) return;
@@ -1041,18 +1506,73 @@ function renderPilhas(){
     var temQuebras = dados && dados.length;
     el.innerHTML='<div class="pilha-empty">Nenhuma pilha carregada ainda.<br><br>'+
       (temQuebras
-        ? 'As quebras estão carregadas, mas as pilhas precisam da planilha completa. '+(isAdmin?'Toque em <b>📂 (importar)</b> no topo para reimportar a planilha de estoque.':'Peça para o admin reimportar a planilha.')
+        ? 'As quebras estão carregadas, mas as pilhas precisam da planilha completa. '+(podeImportarPlanilha?'Toque em <b>📂 (importar)</b> no topo para reimportar a planilha de estoque.':'Peça para o Cosme ou Anderson reimportar a planilha.')
         : 'Importe a planilha de estoque na aba <b>Quebras</b> para carregar os SKUs.')+
       '</div>';
     return;
   }
+  var termo=(filtroPilhas||'').toLowerCase().trim();
+  var lista=pilhasDB;
+  if(termo){
+    lista=pilhasDB.filter(function(p){
+      return String(p.cod||'').toLowerCase().indexOf(termo)!==-1
+          || String(p.nome||'').toLowerCase().indexOf(termo)!==-1;
+    });
+  }
+  if(!lista.length){
+    el.innerHTML='<div class="pilha-empty">Nenhuma pilha encontrada para "<b>'+termo+'</b>".</div>';
+    return;
+  }
+  // separa: pendentes (cartões editáveis), validadas certinhas e divergentes (em acordeões)
+  var pendentes=[], validadas=[], divergentes=[];
+  lista.forEach(function(p){
+    var st=P[p.cod];
+    if(st && st.validado){
+      if((st.diff||0)===0) validadas.push(p); else divergentes.push(p);
+    } else pendentes.push(p);
+  });
+
   var html='';
-  pilhasDB.forEach(function(p){
+
+  // ── Acordeão: Contagem validada (bateu certinho) ──
+  if(validadas.length){
+    var aberto = termo ? true : _pilhasValOpen;
+    html+='<div class="validated-panel" style="margin:0 0 10px">'+
+            '<button class="validated-toggle" onclick="togglePilhasValidated()">'+
+              '<div class="validated-toggle-icon">✓</div>'+
+              '<span class="validated-toggle-label">Contagem validada</span>'+
+              '<span class="validated-toggle-count">'+validadas.length+'</span>'+
+              '<span class="validated-toggle-arrow'+(aberto?' open':'')+'" id="pilhaValArrow">▼</span>'+
+            '</button>'+
+            '<div class="validated-body'+(aberto?' open':'')+'" id="pilhaValBody">'+
+              '<div class="validated-inner">'+validadas.map(_miniPilhaHTML).join('')+'</div>'+
+            '</div>'+
+          '</div>';
+  }
+
+  // ── Acordeão: Contagem divergente (validada com diferença) ──
+  if(divergentes.length){
+    var abertoD = termo ? true : _pilhasDivOpen;
+    html+='<div class="validated-panel" style="margin:0 0 10px">'+
+            '<button class="validated-toggle" onclick="togglePilhasDivergente()">'+
+              '<div class="validated-toggle-icon diverg">⚠</div>'+
+              '<span class="validated-toggle-label">Contagem divergente</span>'+
+              '<span class="validated-toggle-count diverg">'+divergentes.length+'</span>'+
+              '<span class="validated-toggle-arrow'+(abertoD?' open':'')+'" id="pilhaDivArrow">▼</span>'+
+            '</button>'+
+            '<div class="validated-body'+(abertoD?' open':'')+'" id="pilhaDivBody">'+
+              '<div class="validated-inner">'+divergentes.map(_miniPilhaHTML).join('')+'</div>'+
+            '</div>'+
+          '</div>';
+  }
+
+  // ── Cartões pendentes (contagem em andamento) ──
+  pendentes.forEach(function(p){
     var st=P[p.cod]||{conts:[{nm:'Cont 1',qtd:''}],validado:false,diff:0};
     var soma=_somaPilha(p.cod);
     var diff=soma - p.esperado;
-    var validado=st.validado;
-    var cardCls='pilha-card'+(validado?' done':'')+(validado&&st.diff!==0?' div':'');
+    var temContagem=st.conts.some(function(c){return c.qtd!=='';});
+    var cardCls='pilha-card'+(temContagem?' touched':'');
 
     html+='<div class="'+cardCls+'" data-cod="'+p.cod+'">';
     // header
@@ -1064,55 +1584,71 @@ function renderPilhas(){
             '<div class="pilha-esp"><div class="pilha-esp-vl">'+p.esperado+'</div><div class="pilha-esp-lb">Pilhas estoque</div></div>'+
           '</div>';
 
-    if(validado){
-      // estado validado: resumo + desfazer
-      var tag = st.diff===0
-        ? '<span class="pilha-validated-tag">✓ Validado &middot; '+soma+' pilhas</span>'
-        : '<span class="pilha-validated-tag div">⚠ Validado c/ DIV &middot; '+soma+' contadas ('+(st.diff>0?'+':'')+st.diff+')</span>';
-      html+='<div class="pilha-foot">'+
-              '<div class="pilha-soma">'+tag+'</div>'+
-              '<button class="btn-undo-pilha" onclick="desfazerPilha(\''+p.cod+'\')">↩ Refazer</button>'+
-            '</div>';
-    } else {
-      // contagens editáveis
-      html+='<div class="cont-list">';
-      st.conts.forEach(function(c,ci){
-        html+='<div class="cont-row">'+
-                '<input class="cont-nm" value="'+String(c.nm||'').replace(/"/g,'&quot;')+'" oninput="editarContNome(\''+p.cod+'\','+ci+',this.value)" placeholder="Nome"/>'+
-                '<input class="cont-qtd" type="number" inputmode="numeric" pattern="[0-9]*" min="0" value="'+(c.qtd===''?'':c.qtd)+'" oninput="editarContQtd(\''+p.cod+'\','+ci+',this.value)" placeholder="0"/>'+
-                (st.conts.length>1?'<button class="cont-del" onclick="removerCont(\''+p.cod+'\','+ci+')">×</button>':'<span style="width:30px;flex-shrink:0"></span>')+
-              '</div>';
-      });
-      html+='</div>';
-      html+='<button class="pilha-add" onclick="adicionarCont(\''+p.cod+'\')">＋ Adicionar contagem</button>';
-      // footer com soma e validar
-      var somaCls = soma===p.esperado ? 'ok' : (soma>0||st.conts.some(function(c){return c.qtd!=='';}) ? 'div' : '');
-      var diffHtml='';
-      if(diff!==0){
-        diffHtml = diff<0
-          ? '<div class="pilha-diff falta">Faltam '+(-diff)+'</div>'
-          : '<div class="pilha-diff sobra">Sobram '+diff+'</div>';
-      } else if(soma>0){
-        diffHtml = '<div class="pilha-diff" style="color:var(--green)">Bateu certinho ✓</div>';
-      }
-      html+='<div class="pilha-foot">'+
-              '<div class="pilha-soma">'+
-                '<div class="pilha-soma-vl '+somaCls+'" id="soma-'+p.cod+'">'+soma+'</div>'+
-                '<div class="pilha-soma-lb">Contadas / '+p.esperado+' esperadas</div>'+
-                diffHtml+
+    // contagens editáveis — grade de 2 colunas (compacto p/ retrato)
+    html+='<div class="cont-list">';
+    st.conts.forEach(function(c,ci){
+      var solo=(st.conts.length===1)?' solo':'';
+      html+='<div class="cont-cell'+solo+'">'+
+              '<div class="cont-cell-top">'+
+                '<input class="cont-nm" value="'+String(c.nm||'').replace(/"/g,'&quot;')+'" oninput="editarContNome(\''+p.cod+'\','+ci+',this.value)" placeholder="Nome do bloco"/>'+
+                (st.conts.length>1?'<button class="cont-del" onclick="removerCont(\''+p.cod+'\','+ci+')" title="Remover">×</button>':'')+
               '</div>'+
-              '<button class="btn-valpilha" onclick="validarPilha(\''+p.cod+'\')">Validar</button>'+
+              '<input class="cont-qtd" type="number" inputmode="numeric" pattern="[0-9]*" min="0" value="'+(c.qtd===''?'':c.qtd)+'" oninput="editarContQtd(\''+p.cod+'\','+ci+',this.value)" placeholder="0"/>'+
             '</div>';
+    });
+    html+='</div>';
+    html+='<button class="pilha-add" onclick="adicionarCont(\''+p.cod+'\')">＋ Adicionar contagem</button>';
+    // footer com soma e validar
+    var somaCls = soma===p.esperado ? 'ok' : (soma>0||temContagem ? 'div' : '');
+    var diffHtml='';
+    if(diff!==0){
+      diffHtml = diff<0
+        ? '<div class="pilha-diff falta">Faltam '+(-diff)+'</div>'
+        : '<div class="pilha-diff sobra">Sobram '+diff+'</div>';
+    } else if(soma>0){
+      diffHtml = '<div class="pilha-diff" style="color:var(--green)">Bateu certinho ✓</div>';
     }
+    html+='<div class="pilha-foot">'+
+            '<div class="pilha-soma">'+
+              '<div class="pilha-soma-vl '+somaCls+'" id="soma-'+p.cod+'">'+soma+'</div>'+
+              '<div class="pilha-soma-lb">Contadas / '+p.esperado+' esperadas</div>'+
+              diffHtml+
+            '</div>'+
+            '<button class="btn-valpilha" onclick="validarPilha(\''+p.cod+'\')">Validar</button>'+
+          '</div>';
     html+='</div>';
   });
+
+  if(!pendentes.length && (validadas.length || divergentes.length)){
+    html+='<div class="pilha-empty" style="padding:34px 20px">🎉 Todas as pilhas foram conferidas!</div>';
+  }
+
   el.innerHTML=html;
+}
+
+// mini-card de uma pilha já validada (dentro do acordeão)
+function _miniPilhaHTML(p){
+  var st=P[p.cod]||{};
+  var soma=(st.soma!=null)?st.soma:_somaPilha(p.cod);
+  var ok=(st.diff||0)===0;
+  var resTag = ok
+    ? '<span class="mini-st pres">✓ '+soma+' pilhas</span>'
+    : '<span class="mini-st corr">⚠ '+soma+' ('+(st.diff>0?'+':'')+st.diff+')</span>';
+  var quem = st.by?('por <b>'+st.by+'</b>'+(st.ts?(' · '+tempoRelativo(st.ts)):'')):'';
+  return '<div class="mini-card">'+
+    '<div class="mini-mid">'+
+      '<span class="mini-nome">'+p.nome+'</span>'+
+      '<span class="mini-by">SKU '+p.cod+(quem?(' · '+quem):'')+'</span>'+
+    '</div>'+
+    resTag+
+    '<button class="mini-undo" onclick="desfazerPilha(\''+p.cod+'\')" title="Refazer">↩</button>'+
+  '</div>';
 }
 
 function adicionarCont(cod){
   var st=P[cod]; if(!st) return;
   st.conts.push({nm:'Cont '+(st.conts.length+1), qtd:''});
-  _savePilhas(); renderPilhas();
+  _touchPilha(cod); renderPilhas();
   // foca o último campo de qtd
   setTimeout(function(){
     var card=document.querySelector('.pilha-card[data-cod="'+cod+'"]');
@@ -1122,16 +1658,16 @@ function adicionarCont(cod){
 function removerCont(cod,ci){
   var st=P[cod]; if(!st||st.conts.length<=1) return;
   st.conts.splice(ci,1);
-  _savePilhas(); renderPilhas();
+  _touchPilha(cod); renderPilhas();
 }
 function editarContNome(cod,ci,val){
   var st=P[cod]; if(!st||!st.conts[ci]) return;
-  st.conts[ci].nm=val; _savePilhas();
+  st.conts[ci].nm=val; _touchPilha(cod);
 }
 function editarContQtd(cod,ci,val){
   var st=P[cod]; if(!st||!st.conts[ci]) return;
   st.conts[ci].qtd = val===''?'':String(val).replace(/[^0-9]/g,'');
-  _savePilhas();
+  _touchPilha(cod);
   // atualiza soma em tempo real sem re-render completo
   var soma=_somaPilha(cod);
   var p=pilhasDB.find(function(x){return x.cod===cod;});
@@ -1144,6 +1680,9 @@ function editarContQtd(cod,ci,val){
   if(p){
     var card=document.querySelector('.pilha-card[data-cod="'+cod+'"]');
     if(card){
+      // fundo amarelado ao vivo enquanto houver alguma contagem digitada
+      var temContagem=st.conts.some(function(c){return c.qtd!=='';});
+      card.classList.toggle('touched', temContagem);
       var old=card.querySelector('.pilha-diff'); if(old) old.remove();
       var diff=soma-p.esperado, dh=null;
       if(diff!==0){
@@ -1171,12 +1710,12 @@ function validarPilha(cod){
     if(!confirm(msg)) return;
   }
   st.validado=true; st.diff=diff; st.soma=soma;
-  _savePilhas(); renderPilhas();
+  _touchPilha(cod); renderPilhas();
 }
 function desfazerPilha(cod){
   var st=P[cod]; if(!st) return;
   st.validado=false;
-  _savePilhas(); renderPilhas();
+  _touchPilha(cod); renderPilhas();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1188,9 +1727,12 @@ var PUSH_DEBOUNCE_MS = 1500;
 
 function _fbDadosURL(){ return FB_URL + '/dados_' + _dataKey() + '.json'; }
 function _fbConfURL(){  return FB_URL + '/conf_'  + _dataKey() + '.json'; }
+function _fbPilhasConfURL(){ return FB_URL + '/pilhas_conf_' + _dataKey() + '.json'; }
 
 var pushTimer = null;
 var pullTimer = null;
+var pilhasPushTimer = null;
+var _pilhasSyncBusy = false;
 var _syncBusy = false;
 var _jaSincronizou = false; // evita notificar tudo na primeira carga
 var ultimaMudancaRemota = {};
@@ -1235,6 +1777,53 @@ function cloudPushDebounced(){
   pushTimer = setTimeout(cloudPush, PUSH_DEBOUNCE_MS);
 }
 
+// true se o usuário está digitando numa contagem agora (evita re-render que tira o foco)
+function _editandoPilha(){
+  var a=document.activeElement;
+  return a && a.classList && (a.classList.contains('cont-qtd')||a.classList.contains('cont-nm'));
+}
+
+// Sincroniza a validação de pilhas (P) com a nuvem: faz merge por SKU (mais novo vence) e grava
+function cloudPushPilhas(){
+  if(!navigator.onLine) return;
+  if(_pilhasSyncBusy){ cloudPushPilhasDebounced(); return; }
+  _pilhasSyncBusy = true;
+  var guard = setTimeout(function(){ _pilhasSyncBusy = false; }, 15000);
+
+  fetch(_fbPilhasConfURL())
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(remoto){
+      var mudou = false;
+      if(remoto && typeof remoto === 'object'){
+        for(var k in remoto){
+          var rem = remoto[k], loc = P[k];
+          if(!rem || typeof rem !== 'object') continue;
+          if((rem.ts||0) > ((loc&&loc.ts)||0)){ P[k] = rem; mudou = true; }
+        }
+      }
+      return fetch(_fbPilhasConfURL(), {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(P)
+      }).then(function(r){ return {ok:r.ok, mudou:mudou}; });
+    })
+    .then(function(res){
+      if(!res.ok) throw new Error('push pilhas falhou');
+      _savePilhas();
+      if(res.mudou && viewAtual==='pilhas' && !_editandoPilha()) renderPilhas();
+      clearTimeout(guard); _pilhasSyncBusy = false;
+    })
+    .catch(function(e){
+      console.warn('[cloudPushPilhas]', e);
+      clearTimeout(guard); _pilhasSyncBusy = false;
+    });
+}
+
+function cloudPushPilhasDebounced(){
+  if(pilhasPushTimer) clearTimeout(pilhasPushTimer);
+  pilhasPushTimer = setTimeout(cloudPushPilhas, PUSH_DEBOUNCE_MS);
+}
+
 function cloudPull(){
   if(!navigator.onLine){ setSyncStatus('offline'); return; }
   if(_syncBusy) return;
@@ -1269,11 +1858,12 @@ function cloudPull(){
 
 function iniciarSync(){
   cloudPush();
+  cloudPushPilhas();
   if(pullTimer) clearInterval(pullTimer);
-  pullTimer = setInterval(cloudPush, POLL_MS);
+  pullTimer = setInterval(function(){ cloudPush(); cloudPushPilhas(); }, POLL_MS);
 }
 
-function forcarSync(){ cloudPush(); }
+function forcarSync(){ cloudPush(); cloudPushPilhas(); }
 
 function pushDados(tentativa){
   tentativa = tentativa || 1;
@@ -1283,7 +1873,7 @@ function pushDados(tentativa){
   fetch(_fbDadosURL(), {
     method: 'PUT',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({dados: dados, pilhas: pilhasDB, rows: rowsRaw, ts: Date.now()})
+    body: JSON.stringify({dados: dados, pilhas: pilhasDB, rows: rowsRaw, ts: _importTs || Date.now()})
   })
   .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
   .then(function(){
@@ -1303,29 +1893,43 @@ function pushDados(tentativa){
 }
 
 var _pollDadosTimer = null;
+// uma tentativa de buscar os dados da nuvem; retorna a Promise
+function _tickPollDados(){
+  if(dados.length > 0){ if(_pollDadosTimer){clearInterval(_pollDadosTimer);_pollDadosTimer=null;} return Promise.resolve(); }
+  return fetch(_fbDadosURL())
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      if(d && d.dados && Array.isArray(d.dados) && d.dados.length > 0){
+        dados = d.dados.map(function(it){
+          return Object.assign({},it,{_val:it._val?Number(it._val):Infinity});
+        });
+        if(d.rows && Array.isArray(d.rows) && d.rows.length){ rowsRaw=d.rows; _saveRowsRaw(); }
+        if(d.pilhas && Array.isArray(d.pilhas) && d.pilhas.length){ pilhasDB = d.pilhas; }
+        else if(rowsRaw.length){ _reconstruirPilhas(); }
+        _ensurePilhaState(); _savePilhasDB();
+        if(d.ts) _setImportTs(d.ts);
+        if(viewAtual==='pilhas') renderPilhas();
+        if(_pollDadosTimer){ clearInterval(_pollDadosTimer); _pollDadosTimer = null; }
+        console.log('[pollDados] recebidos:', dados.length, 'itens');
+      }
+    })
+    .catch(function(){});
+}
 function _iniciarPollDados(){
   if(_pollDadosTimer) clearInterval(_pollDadosTimer);
-  if(dados.length > 0) return;
+  if(dados.length > 0){ _buscandoDados=false; return; }
+  // 1ª busca imediata (mostra spinner até terminar)
+  _buscandoDados = true;
+  if(!navigator.onLine){ _buscandoDados=false; render(); }
+  else { render(); }
+  _tickPollDados().then(function(){
+    _buscandoDados = false;
+    render(); prog();
+  });
+  // continua tentando a cada 4s caso ainda não tenha vindo
   _pollDadosTimer = setInterval(function(){
     if(dados.length > 0){ clearInterval(_pollDadosTimer); _pollDadosTimer = null; return; }
-    fetch(_fbDadosURL())
-      .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(d){
-        if(d && d.dados && Array.isArray(d.dados) && d.dados.length > 0){
-          dados = d.dados.map(function(it){
-            return Object.assign({},it,{_val:it._val?Number(it._val):Infinity});
-          });
-          if(d.rows && Array.isArray(d.rows) && d.rows.length){ rowsRaw=d.rows; _saveRowsRaw(); }
-          if(d.pilhas && Array.isArray(d.pilhas) && d.pilhas.length){ pilhasDB = d.pilhas; }
-          else if(rowsRaw.length){ _reconstruirPilhas(); }
-          _ensurePilhaState(); _savePilhasDB();
-          if(viewAtual==='pilhas') renderPilhas();
-          clearInterval(_pollDadosTimer); _pollDadosTimer = null;
-          render(); prog();
-          console.log('[pollDados] recebidos:', dados.length, 'itens');
-        }
-      })
-      .catch(function(){});
+    _tickPollDados().then(function(){ render(); prog(); });
   }, 4000);
 }
 
@@ -1339,9 +1943,10 @@ function iniciarConferencia(){
     if(!navigator.onLine) return;
     Promise.all([
       fetch(_fbDadosURL()).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
-      fetch(_fbConfURL()).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+      fetch(_fbConfURL()).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
+      fetch(_fbPilhasConfURL()).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
     ]).then(function(res){
-      var remDados = res[0], remConf = res[1], mudou = false;
+      var remDados = res[0], remConf = res[1], remPilhas = res[2], mudou = false, mudouPilha = false;
       if(remDados && remDados.dados && Array.isArray(remDados.dados) && remDados.dados.length > 0){
         dados = remDados.dados.map(function(it){
           return Object.assign({},it,{_val:it._val?Number(it._val):Infinity});
@@ -1361,6 +1966,14 @@ function iniciarConferencia(){
         }
         try{ localStorage.setItem(SK, JSON.stringify(E)); }catch(e){}
       }
+      if(remPilhas && typeof remPilhas === 'object'){
+        for(var pk in remPilhas){
+          var remP = remPilhas[pk], locP = P[pk];
+          if(!remP || typeof remP !== 'object') continue;
+          if((remP.ts||0) > ((locP&&locP.ts)||0)){ P[pk] = remP; mudouPilha = true; }
+        }
+        if(mudouPilha){ _savePilhas(); if(viewAtual==='pilhas' && !_editandoPilha()) renderPilhas(); }
+      }
       if(mudou){ render(); prog(); }
     }).catch(function(e){ console.warn('[iniciarConferencia bg]', e); });
   }, 500);
@@ -1371,9 +1984,20 @@ setInterval(function(){
   if(novoSK !== SK){
     SK = novoSK; E = {};
     try{ localStorage.setItem(SK,'{}'); }catch(e){}
+    // vira o dia também para as pilhas
+    SKP = 'conf_p_' + _dataKey();
+    SKPDB = 'pilhas_db_' + _dataKey();
+    SKROWS = 'pilhas_rows_' + _dataKey();
+    P = {}; pilhasDB = []; rowsRaw = [];
+    // vira o dia também para o checklist "conferir histórico"
+    SKHC = 'hist_conf_' + _dataKey();
+    _histConf = {};
+    _importTs = 0; _atualizarImportInfo();
+    try{ localStorage.setItem(SKP,'{}'); }catch(e){}
     if(pullTimer) clearInterval(pullTimer);
-    pullTimer = setInterval(cloudPush, POLL_MS);
+    pullTimer = setInterval(function(){ cloudPush(); cloudPushPilhas(); }, POLL_MS);
     render(); prog();
+    if(viewAtual==='pilhas') renderPilhas();
   }
 }, 60000);
 
@@ -1520,7 +2144,14 @@ function desfazerValidacao(key){
 var _etqWin=null;
 function abrirEtq(ev,el){
   if(ev)ev.preventDefault();
-  abrirEtqURL(el.getAttribute('data-etqurl'), el.getAttribute('data-etqtag')||'Etiqueta');
+  // marca como consultada (verde) — só faz sentido nas linhas de comparação,
+  // mas marcar sempre não atrapalha
+  var etq=el.getAttribute('data-etqtag');
+  if(el.classList.contains('cmp-etq')){
+    _marcarEtqVista(etq);
+    el.classList.add('visto');
+  }
+  abrirEtqURL(el.getAttribute('data-etqurl'), etq||'Etiqueta');
 }
 function abrirEtqURL(url,tag){
   if(!url)return;
@@ -1732,14 +2363,18 @@ function prog(){
 
 var _corSkuCache={};
 function corDoSku(cod){
-  var key=String(cod||'0');
+  var dark = (document.documentElement.getAttribute('data-theme')==='dark');
+  var key=(dark?'d|':'l|')+String(cod||'0');
   if(_corSkuCache[key])return _corSkuCache[key];
   var h=0;
-  for(var x=0;x<key.length;x++){h=((h<<5)-h)+key.charCodeAt(x);h|=0;}
+  for(var x=0;x<String(cod||'0').length;x++){h=((h<<5)-h)+String(cod||'0').charCodeAt(x);h|=0;}
   var hue=Math.abs(h*47)%360;
-  var light='hsl('+hue+',55%,94%)';
-  var dark ='hsl('+hue+',42%,36%)';
-  var res={light:light,dark:dark,hue:hue};
+  // tema claro: fundo bem claro + traço médio; tema escuro: fundo escuro tingido + traço vivo
+  var light = dark ? 'hsl('+hue+',26%,16%)' : 'hsl('+hue+',55%,94%)';
+  var traco = dark ? 'hsl('+hue+',45%,52%)' : 'hsl('+hue+',42%,36%)';
+  // fundo do separador de SKU (texto branco em cima) — mantém escuro o suficiente
+  var sep = dark ? 'hsl('+hue+',38%,38%)' : 'hsl('+hue+',42%,36%)';
+  var res={light:light,dark:traco,sep:sep,hue:hue};
   _corSkuCache[key]=res;
   return res;
 }
@@ -1931,7 +2566,13 @@ function render(){
 
   // ── Renderizar cards pendentes ──
   if(pendentes.length===0){
-    if(dados.length===0){
+    if(dados.length===0 && _buscandoDados){
+      cont.innerHTML='<div class="loading-state">'+
+        '<div class="loading-spin"></div>'+
+        '<div class="loading-txt">Buscando dados…</div>'+
+        '<div class="loading-sub">Carregando a conferência da nuvem</div>'+
+      '</div>';
+    } else if(dados.length===0){
       cont.innerHTML='<div class="no-res" style="padding:60px 24px">'+
         '<div style="font-size:40px;margin-bottom:14px">📦</div>'+
         '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:6px">Nenhuma quebra na nuvem</div>'+
@@ -1964,7 +2605,7 @@ function render(){
     if(item._cod!==lastCod){
       lastCod=item._cod;
       var cnt=codCount[item._cod]||1;
-      h+='<div class="sku-sep" style="background:'+skuColor.dark+'">'+
+      h+='<div class="sku-sep" style="background:'+skuColor.sep+'">'+
          '<div class="sku-sep-nome">'+item.nome+'</div>'+
          '<span class="sku-sep-cnt">'+cnt+(cnt===1?' etiqueta':' etiquetas')+'</span>'+
          '</div>';
@@ -2346,19 +2987,26 @@ function gerarPDFPilhas(){
 (function bootInicial(){
   var ap = document.getElementById('app');
   if(ap) ap.style.display = 'block';
+  try{ _initTema(); }catch(e){}
+  try{ _atualizarBadgeHist(); }catch(e){}
 
   var nomeSalvo = '';
   try { nomeSalvo = localStorage.getItem('estoquista_nome') || ''; } catch(e){}
   var adminSalvo = false;
   try { adminSalvo = localStorage.getItem('is_admin') === '1'; } catch(e){}
+  var importSalvo = false;
+  try { importSalvo = localStorage.getItem('pode_importar') === '1'; } catch(e){}
 
   if(nomeSalvo){
     isAdmin = adminSalvo;
+    podeImportarPlanilha = adminSalvo || importSalvo;
     ME = nomeSalvo;
     var bn = document.getElementById('btnNome');
-    if(bn) bn.textContent = (isAdmin ? '👑' : '👤') + ' ' + ME;
+    if(bn) bn.textContent = (isAdmin ? '👑' : (podeImportarPlanilha ? '📋' : '👤')) + ' ' + ME;
     var bi = document.getElementById('btnImport');
-    if(bi) bi.style.display = isAdmin ? 'inline-flex' : 'none';
+    if(bi) bi.style.display = podeImportarPlanilha ? 'inline-flex' : 'none';
+    if(dados.length===0) _buscandoDados = true;
+    _restaurarImportTs();
     render(); prog();
     setTimeout(function(){
       try{ iniciarSync(); }catch(e){}
@@ -2395,6 +3043,7 @@ function _pDate(v){if(!v&&v!==0)return null;if(v instanceof Date&&!isNaN(v)){var
 function _gField(row,al){for(var i=0;i<al.length;i++){var a=al[i];if(row[a]!==undefined&&row[a]!==null&&String(row[a]).trim()!=='')return row[a];}return '';}
 function _gLastro(cod,name){var s=String(cod).trim();if(lastroSkuDB[s])return lastroSkuDB[s];return _nText(name).indexOf('HAMBURGUER GOURMET')>=0?136:190;}
 
+var _pendingRows=null, _pendingNome='';
 function processarArquivo(file){
   if(!file)return;
   if(typeof XLSX==='undefined'){alert('Biblioteca de planilha ainda carregando. Aguarde e tente de novo.');return;}
@@ -2403,10 +3052,32 @@ function processarArquivo(file){
     try{
       var wb=XLSX.read(new Uint8Array(evt.target.result),{type:'array',cellDates:true});
       var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
-      montarQuebras(rows,file.name);
+      // se já há dados carregados → é uma REIMPORTAÇÃO: avisa e guarda snapshot antes
+      if(dados && dados.length>0){
+        _pendingRows=rows; _pendingNome=file.name;
+        var m=document.getElementById('reimportModal');
+        if(m){ m.style.display='flex'; }
+        else { confirmarReimport(); } // fallback
+      } else {
+        montarQuebras(rows,file.name);
+      }
     }catch(e){alert('Erro ao ler planilha: '+e.message);}
   };
   reader.readAsArrayBuffer(file);
+}
+
+function cancelarReimport(){
+  _pendingRows=null; _pendingNome='';
+  var m=document.getElementById('reimportModal'); if(m) m.style.display='none';
+}
+function confirmarReimport(){
+  var m=document.getElementById('reimportModal'); if(m) m.style.display='none';
+  // 1) salva snapshot da conferência anterior + compara com a nova
+  try{ _salvarSnapshotImportacao(_pendingRows); }catch(e){ console.warn('snapshot falhou',e); }
+  // 2) aplica a nova importação
+  var rows=_pendingRows, nome=_pendingNome;
+  _pendingRows=null; _pendingNome='';
+  if(rows) montarQuebras(rows, nome);
 }
 
 function montarQuebras(rows,fileName){
@@ -2452,6 +3123,7 @@ function montarQuebras(rows,fileName){
     return a._val-b._val;
   });
 
+  _setImportTs(Date.now());
   render();
   montarPilhas(rows);
   if(viewAtual==='pilhas') renderPilhas();
@@ -2466,9 +3138,163 @@ function reimportar(){
 }
 
 // ═══════════════════════════════════════════════════════════════
+// HISTÓRICO DE IMPORTAÇÕES (botão relógio)
+// ═══════════════════════════════════════════════════════════════
+var SKHIST='hist_imp_'+_dataKey();
+var _historico=[];
+try{ _historico=JSON.parse(localStorage.getItem(SKHIST)||'[]'); }catch(e){ _historico=[]; }
+function _saveHist(){ try{ localStorage.setItem(SKHIST, JSON.stringify(_historico)); }catch(e){} _atualizarBadgeHist(); }
+function _atualizarBadgeHist(){
+  var b=document.getElementById('histBadge');
+  if(!b)return;
+  var n=(_historico&&_historico.length)?_historico.length:0;
+  if(n>0){ b.textContent=n; b.style.display='flex'; }
+  else b.style.display='none';
+}
+
+// Salva no histórico um retrato da conferência atual: validadas e ausentes.
+// Não compara com a nova planilha.
+function _salvarSnapshotImportacao(rowsNovas){
+  var presentes=[], ausentes=[];
+  for(var i=0;i<dados.length;i++){
+    var it=dados[i];
+    var est=E[it.k]||{};
+    if(!est.status) continue;
+    var reg={etiqueta:it.etiqueta, sku:it._cod, nome:it.nome, validade:it.data, total:it.total, status:est.status, by:(est.by||'')};
+    if(est.status==='ause') ausentes.push(reg);
+    else presentes.push(reg); // pres ou corr
+  }
+
+  var agora=new Date();
+  var snap={
+    id:'h'+agora.getTime(),
+    hora:agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+    horaFull:agora.toLocaleString('pt-BR'),
+    arquivoNovo:_pendingNome||'planilha',
+    nValidadas:presentes.length, nAusentes:ausentes.length,
+    presentes:presentes,
+    ausentes:ausentes
+  };
+  _historico.unshift(snap); // mais recente primeiro
+  _saveHist();
+}
+
+function abrirHistorico(){
+  var bg=document.getElementById('histModal');
+  var body=document.getElementById('histBody');
+  if(!bg||!body)return;
+  if(_historico.length===0){
+    body.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--text2);font-size:13px;line-height:1.6">Nenhuma importação salva ainda hoje.<br><br>Quando você reimportar a planilha, a conferência anterior fica guardada aqui com a hora.</div>';
+  } else {
+    var html='';
+    _historico.forEach(function(s){
+      html+='<div style="background:var(--surface2);border-radius:12px;padding:13px 14px;margin-bottom:10px;border:1px solid var(--border)">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
+          '<span style="font-size:15px;font-weight:900;color:var(--blue-text)">🕐 '+s.hora+'</span>'+
+          '<span style="font-size:10px;color:var(--text3);flex:1">→ '+String(s.arquivoNovo).replace(/</g,'')+'</span>'+
+        '</div>'+
+        '<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">'+
+          '<span style="font-size:10px;font-weight:700;background:var(--chip-bg);color:var(--blue-text);padding:3px 8px;border-radius:6px">'+s.nValidadas+' validadas</span>'+
+          '<span style="font-size:10px;font-weight:700;background:var(--bad-bg);color:var(--red);padding:3px 8px;border-radius:6px">'+s.nAusentes+' ausentes</span>'+
+        '</div>'+
+        '<button onclick="baixarPDFHistorico(\''+s.id+'\')" style="width:100%;padding:10px;border:none;border-radius:9px;background:var(--blue);color:#fff;font-size:12px;font-weight:800;cursor:pointer">📄 Baixar PDF desta conferência</button>'+
+      '</div>';
+    });
+    body.innerHTML=html;
+  }
+  bg.classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function fecharHistorico(){
+  var bg=document.getElementById('histModal');
+  if(bg)bg.classList.remove('show');
+  document.body.style.overflow='';
+}
+
+function baixarPDFHistorico(id){
+  var s=_historico.find(function(x){return x.id===id;});
+  if(!s){alert('Registro não encontrado.');return;}
+  if(!window.jspdf){alert('Aguarde o carregamento do PDF.');return;}
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var pgW=doc.internal.pageSize.getWidth();
+  var pgH=doc.internal.pageSize.getHeight();
+
+  // header
+  doc.setFillColor(88,86,214);doc.rect(0,0,pgW,1.5,'F');
+  doc.setFillColor(250,250,253);doc.rect(0,1.5,pgW,28,'F');
+  doc.setDrawColor(235,235,242);doc.setLineWidth(0.3);doc.line(0,29.5,pgW,29.5);
+  doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(28,28,30);
+  doc.text('Conferência salva — '+s.hora,10,14);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(108,108,112);
+  doc.text('Retrato da conferência (validadas e ausentes) — CD Matriz Panutrir',10,20);
+  doc.text(s.horaFull+'  •  '+s.nValidadas+' validadas / '+s.nAusentes+' ausentes',10,26);
+
+  var y=37;
+  function foot(p){
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(150,150,160);
+    doc.text('Histórico de importações — '+s.horaFull+' — CD Matriz Panutrir',pgW/2,pgH-7,{align:'center'});
+  }
+  function secao(titulo, lista, cor){
+    if(y>pgH-30){doc.addPage();y=16;}
+    doc.setFillColor(cor[0],cor[1],cor[2]);doc.rect(9,y,pgW-18,7,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(255,255,255);
+    doc.text(titulo+'  ('+lista.length+')',12,y+4.8);
+    y+=7;
+    if(lista.length===0){
+      doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(140,140,150);
+      doc.text('Nenhuma.',12,y+5);y+=9;return;
+    }
+    // cabeçalho colunas
+    doc.setFillColor(28,28,30);doc.rect(9,y,pgW-18,5.5,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(255,255,255);
+    doc.text('ETIQUETA',12,y+3.7);
+    doc.text('SKU',42,y+3.7);
+    doc.text('PRODUTO',60,y+3.7);
+    doc.text('VALID.',pgW-40,y+3.7);
+    doc.text('STATUS',pgW-22,y+3.7);
+    y+=5.5;
+    lista.forEach(function(r,idx){
+      if(y>pgH-16){foot();doc.addPage();y=16;}
+      var alt=idx%2===0;
+      doc.setFillColor(alt?250:255,alt?250:255,alt?253:255);doc.rect(9,y,pgW-18,6,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(26,55,112);
+      doc.text(String(r.etiqueta||'-'),12,y+4);
+      doc.setFont('helvetica','normal');doc.setTextColor(60,60,65);
+      doc.text(String(r.sku||'-'),42,y+4);
+      var nm=String(r.nome||'').length>30?String(r.nome).substring(0,29)+'…':String(r.nome||'');
+      doc.text(nm,60,y+4);
+      doc.setFontSize(6.5);doc.text(String(r.validade||'-'),pgW-40,y+4);
+      var stTxt=r.status==='ause'?'AUSENTE':(r.status==='pres'?'PRESENTE':(r.status==='corr'?'CORRIG.':'—'));
+      var stC=r.status==='ause'?[200,40,40]:[120,120,130];
+      doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(stC[0],stC[1],stC[2]);
+      doc.text(stTxt,pgW-22,y+4);
+      y+=6;
+    });
+    y+=6;
+  }
+
+  secao('Etiquetas validadas (presentes / corrigidas)', s.presentes, [40,160,90]);
+  secao('Etiquetas ausentes', s.ausentes, [200,60,60]);
+
+  foot();
+  var dt=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  doc.save('Conferencia_'+s.hora.replace(':','h')+'_'+dt+'.pdf');
+}
+
+// ═══════════════════════════════════════════════════════════════
 // COMPARAÇÃO: quais ausentes já saíram da importação atual
 // ═══════════════════════════════════════════════════════════════
 var _relatorioSaidas=null; // guarda o resultado para exportar
+// etiquetas cujo histórico já foi consultado (fica verde) — persiste por dia
+var SKVIS='etq_vistas_'+_dataKey();
+var _etqVistas={};
+try{ _etqVistas=JSON.parse(localStorage.getItem(SKVIS)||'{}'); }catch(e){ _etqVistas={}; }
+function _marcarEtqVista(etq){
+  if(!etq)return;
+  _etqVistas[etq]=true;
+  try{ localStorage.setItem(SKVIS, JSON.stringify(_etqVistas)); }catch(e){}
+}
 
 // chave de comparação = etiqueta + SKU (normalizada)
 function _chaveCmp(etq,cod){
@@ -2550,23 +3376,25 @@ function renderRelatorioSaidas(){
       var hasL=x.etiqueta&&x.etiqueta!=='-';
       var ifu='https://inflow.tec.br/view_etiqueta?e='+encodeURIComponent(x.etiqueta);
       var etqEsc=String(x.etiqueta).replace(/"/g,'&quot;');
-      html+='<div class="cmp-row">'+
-        (hasL?'<a class="mini-etq" href="'+ifu+'" data-etqurl="'+ifu+'" data-etqtag="'+etqEsc+'" onclick="abrirEtq(event,this)">'+x.etiqueta+'</a>':'<span class="mini-etq" style="color:var(--text2)">'+x.etiqueta+'</span>')+
+      var vis=_etqVistas[x.etiqueta]?' visto':'';
+      html+='<div class="cmp-row saiu">'+
+        (hasL?'<a class="mini-etq cmp-etq'+vis+'" href="'+ifu+'" data-etqurl="'+ifu+'" data-etqtag="'+etqEsc+'" onclick="abrirEtq(event,this)">'+x.etiqueta+'</a>':'<span class="mini-etq" style="color:var(--text2)">'+x.etiqueta+'</span>')+
         '<span class="cmp-row-nome">'+x.nome+'</span>'+
         '<span class="cmp-row-tag out">SAIU</span>'+
         '</div>';
     });
   }
 
-  // seção: ainda no estoque (referência)
+  // seção: ainda no estoque (ação pendente — destacada)
   if(r.ficaram.length>0){
-    html+='<div class="cmp-sec-title" style="color:var(--text2)">↺ Ainda ausentes no estoque</div>';
+    html+='<div class="cmp-sec-title">↺ Ainda ausentes no estoque <span style="font-weight:600;color:var(--text3);font-size:10px">(toque na etiqueta → abra o Inflow → Ver histórico)</span></div>';
     r.ficaram.forEach(function(x){
       var hasL=x.etiqueta&&x.etiqueta!=='-';
       var ifu='https://inflow.tec.br/view_etiqueta?e='+encodeURIComponent(x.etiqueta);
       var etqEsc=String(x.etiqueta).replace(/"/g,'&quot;');
-      html+='<div class="cmp-row" style="opacity:.7">'+
-        (hasL?'<a class="mini-etq" href="'+ifu+'" data-etqurl="'+ifu+'" data-etqtag="'+etqEsc+'" onclick="abrirEtq(event,this)">'+x.etiqueta+'</a>':'<span class="mini-etq" style="color:var(--text2)">'+x.etiqueta+'</span>')+
+      var vis=_etqVistas[x.etiqueta]?' visto':'';
+      html+='<div class="cmp-row fica">'+
+        (hasL?'<a class="mini-etq cmp-etq'+vis+'" href="'+ifu+'" data-etqurl="'+ifu+'" data-etqtag="'+etqEsc+'" onclick="abrirEtq(event,this)">'+x.etiqueta+'</a>':'<span class="mini-etq" style="color:var(--text2)">'+x.etiqueta+'</span>')+
         '<span class="cmp-row-nome">'+x.nome+'</span>'+
         '</div>';
     });
@@ -2604,13 +3432,20 @@ function exportarRelatorioSaidas(){
 document.addEventListener('click',function(e){
   var bg=document.getElementById('cmpModal');
   if(bg&&e.target===bg)fecharCmp();
+  var hc=document.getElementById('histConfModal');
+  if(hc&&e.target===hc)fecharHistConf();
 });
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
     var bg=document.getElementById('cmpModal');
     if(bg&&bg.classList.contains('show'))fecharCmp();
+    var hc=document.getElementById('histConfModal');
+    if(hc&&hc.classList.contains('show'))fecharHistConf();
   }
 });
+
+// garante badge do histórico atualizado após init de _historico
+try{ _atualizarBadgeHist(); }catch(e){}
 </script>
 </body>
 </html>
