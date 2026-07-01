@@ -1272,17 +1272,17 @@ function selecionarUsuario(nome){
   var m = document.getElementById('nomeModal');
   if(m) m.style.display = 'none';
 
-  if(nome === 'Cosme' || nome === 'Anderson'){
+  if(nome === 'Cosme'){
     window._nomeAdmin = nome;
-    var ehAdmin = (nome === 'Cosme');
     var tit = document.getElementById('senhaTitulo');
     var desc = document.getElementById('senhaDesc');
-    if(tit) tit.textContent = ehAdmin ? '🔒 Senha do Admin' : '🔒 Senha — Anderson';
-    if(desc) desc.textContent = ehAdmin
-      ? 'Digite a senha para entrar como administrador.'
-      : 'Digite a senha do Anderson para entrar.';
+    if(tit) tit.textContent = '🔒 Senha do Admin';
+    if(desc) desc.textContent = 'Digite a senha para entrar como administrador.';
     var sm = document.getElementById('senhaModal');
     if(sm){ sm.style.display = 'flex'; setTimeout(function(){ var si=document.getElementById('senhaInput'); if(si)si.focus(); },100); }
+  } else if(nome === 'Anderson'){
+    // Anderson tem permissão de importar a planilha, igual ao Cosme, sem precisar de senha
+    _aplicarUsuario(nome, false, true);
   } else {
     _aplicarUsuario(nome, false);
   }
